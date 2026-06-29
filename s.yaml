@@ -10,6 +10,7 @@ resources:
     component: fc3
     props:
       region: ${vars.region}
+      serviceName: web-service
       functionName: web
       description: '京东家电搜索 H5 前端'
       runtime: nodejs20
