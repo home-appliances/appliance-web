@@ -1,6 +1,7 @@
 {
   "name": "jd-appliance-fc",
   "version": "1.0.0",
+  "type": "module",
   "description": "FC Web 函数入口 - 静态文件服务 + API 反向代理",
   "main": "index.js"
 }

@@ -1,10 +1,14 @@
 // FC 3.0 HTTP 触发器入口
 // 功能：serve 静态文件 + 反向代理 /api 请求到后端 FC
 
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const https = require('https');
+import fs from 'fs';
+import path from 'path';
+import http from 'http';
+import https from 'https';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 配置：后端 FC 内网地址
 const API_BACKEND = process.env.API_BACKEND || 'https://applican-applian-service-uzjmdtpnxs.cn-shenzhen-vpc.fcapp.run';
@@ -145,7 +149,7 @@ function serveStatic(event) {
 }
 
 // FC 3.0 HTTP 触发器入口
-exports.handler = async (event, context) => {
+export async function handler(event, context) {
   console.log('=== Function handler called ===');
   console.log('Event:', JSON.stringify(event, null, 2));
   console.log('Request:', event.method, event.path);
@@ -161,4 +165,4 @@ exports.handler = async (event, context) => {
   const result = serveStatic(event);
   console.log('Result:', JSON.stringify(result, null, 2));
   return result;
-};
+}
