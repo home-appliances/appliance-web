@@ -146,13 +146,19 @@ function serveStatic(event) {
 
 // FC 3.0 HTTP 触发器入口
 exports.handler = async (event, context) => {
+  console.log('=== Function handler called ===');
+  console.log('Event:', JSON.stringify(event, null, 2));
   console.log('Request:', event.method, event.path);
 
   // API 请求代理到后端 FC
   if (event.path && event.path.startsWith('/api')) {
+    console.log('Proxying to backend...');
     return await proxyRequest(event);
   }
 
   // 其他请求 serve 静态文件
-  return serveStatic(event);
+  console.log('Serving static file...');
+  const result = serveStatic(event);
+  console.log('Result:', JSON.stringify(result, null, 2));
+  return result;
 };
