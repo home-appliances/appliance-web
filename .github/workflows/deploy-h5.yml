@@ -25,23 +25,23 @@ jobs:
       - name: Build H5
         run: npm run build:h5
 
-      - name: Prepare FC deploy package
+      - name: Prepare deploy package
         run: |
-          # 创建部署目录结构
-          mkdir -p fc-deploy/public
+          # 创建部署目录
+          mkdir -p deploy
+
+          # 复制 H5 构建产物
+          cp -r dist/h5/* deploy/
 
           # 复制 FC 入口文件
-          cp fc-entry/index.js fc-deploy/
-          cp fc-entry/package.json fc-deploy/
+          cp fc-entry/index.js deploy/
+          cp fc-entry/package.json deploy/
 
-          # 复制 H5 构建产物到 public 目录
-          cp -r dist/h5/* fc-deploy/public/
-
-          # 查看目录结构
-          echo "=== FC deploy package ==="
-          find fc-deploy -type f | head -20
+          # 查看部署目录结构
+          echo "=== Deploy package ==="
+          find deploy -type f | head -20
           echo "..."
-          echo "Total files: $(find fc-deploy -type f | wc -l)"
+          echo "Total files: $(find deploy -type f | wc -l)"
 
       - name: Package with adm-zip
         run: |
@@ -49,40 +49,30 @@ jobs:
           node -e "
             const AdmZip = require('adm-zip');
             const zip = new AdmZip();
-            zip.addLocalFolder('fc-deploy', '');
-            zip.writeZip('fc-deploy-package.zip');
-            console.log('ZIP created successfully');
-            console.log('Size:', require('fs').statSync('fc-deploy-package.zip').size, 'bytes');
+            zip.addLocalFolder('deploy', '');
+            zip.writeZip('code.zip');
+            console.log('code.zip created successfully');
+            console.log('Size:', require('fs').statSync('code.zip').size, 'bytes');
           "
 
-      - name: Setup Alibaba Cloud CLI
+      - name: Install Serverless Devs
         run: |
-          curl -fsSL https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz | tar xz
-          sudo mv aliyun /usr/local/bin/
+          npm install -g @serverless-devs/s
+          s --version
 
-      - name: Deploy to FC 3.0
-        env:
-          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-          ALIYUN_REGION: ${{ secrets.ALIYUN_REGION }}
-          FC_FUNCTION_NAME: ${{ secrets.FC_FUNCTION_NAME }}
+      - name: Configure credentials
         run: |
-          # 配置阿里云 CLI
-          aliyun configure set \
-            --mode AK \
-            --access-key-id "$ALIYUN_ACCESS_KEY_ID" \
-            --access-key-secret "$ALIYUN_ACCESS_KEY_SECRET" \
-            --region "$ALIYUN_REGION"
+          s config add \
+            --AccountID "${{ secrets.ALIYUN_ACCOUNT_ID }}" \
+            --AccessKeyID "${{ secrets.ALIYUN_ACCESS_KEY_ID }}" \
+            --AccessKeySecret "${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}" \
+            -a default
 
-          # 使用文件方式上传（避免参数过长）
-          aliyun fc PUT \
-            /functions/${FC_FUNCTION_NAME}/code \
-            --header "Content-Type=application/zip" \
-            --body-file "fc-deploy-package.zip" \
-            --region "$ALIYUN_REGION"
-
+      - name: Deploy with Serverless Devs
+        run: |
+          s deploy -y
           echo "✅ Deploy completed!"
 
       - name: Clean up
         if: always()
-        run: rm -rf fc-deploy fc-deploy-package.zip
+        run: rm -rf deploy code.zip
