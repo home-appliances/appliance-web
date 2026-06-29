@@ -69,6 +69,10 @@ jobs:
           echo "=== s.yaml content ==="
           cat s.yaml
           echo ""
+          echo "=== code.zip info ==="
+          ls -la code.zip
+          echo ""
           echo "=== Starting deploy ==="
-          s deploy -y
+          s deploy -y --debug 2>&1 | tail -50
+          echo ""
           echo "✅ Deploy completed!"
