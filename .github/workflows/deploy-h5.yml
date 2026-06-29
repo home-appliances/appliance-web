@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
 
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -38,35 +38,23 @@ jobs:
           cp fc-entry/package.json deploy/
 
           # 查看部署目录结构
-          echo "=== Deploy package structure ==="
-          find deploy -type f | head -30
-          echo "..."
-          echo "Total files: $(find deploy -type f | wc -l)"
+          echo "=== Deploy package ==="
+          find deploy -type f
 
       - name: Package with adm-zip
         run: |
           npm install adm-zip --legacy-peer-deps --no-save
           node -e "
-            const AdmZip = require('adm-zip');
-            const zip = new AdmZip();
-            zip.addLocalFolder('deploy', '');
-            zip.writeZip('code.zip');
-            console.log('code.zip created successfully');
-            console.log('Size:', require('fs').statSync('code.zip').size, 'bytes');
-
-            // 验证打包内容
-            const zip2 = new AdmZip('code.zip');
-            const entries = zip2.getEntries();
-            console.log('\\n=== ZIP contents ===');
-            entries.forEach(e => {
-              console.log(e.entryName);
-            });
+          const AdmZip = require('adm-zip');
+          const zip = new AdmZip();
+          zip.addLocalFolder('deploy');
+          zip.writeZip('code.zip');
+          console.log('ZIP created');
           "
+          ls -la code.zip
 
       - name: Install Serverless Devs
-        run: |
-          npm install -g @serverless-devs/s
-          s --version
+        run: npm install @serverless-devs/s -g
 
       - name: Configure credentials
         run: |
@@ -76,12 +64,5 @@ jobs:
             --AccessKeySecret "${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}" \
             -a default
 
-      - name: Deploy with Serverless Devs
-        run: |
-          # 只更新代码，不更新配置
-          s deploy -y --code
-          echo "✅ Deploy completed!"
-
-      - name: Clean up
-        if: always()
-        run: rm -rf deploy code.zip
+      - name: Deploy to FC
+        run: s deploy -y
