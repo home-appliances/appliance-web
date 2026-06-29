@@ -12,7 +12,7 @@ resources:
       region: ${vars.region}
       functionName: web
       description: '京东家电搜索 H5 前端'
-      runtime: nodejs18
+      runtime: nodejs20
       handler: index.handler
       timeout: 30
       memorySize: 512
@@ -21,3 +21,11 @@ resources:
       code: ./code.zip
       environmentVariables:
         API_BACKEND: 'https://applican-applian-service-uzjmdtpnxs.cn-shenzhen-vpc.fcapp.run'
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
