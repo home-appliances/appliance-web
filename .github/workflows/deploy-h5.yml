@@ -37,15 +37,9 @@ jobs:
           cp fc-entry/index.js deploy/
           cp fc-entry/package.json deploy/
 
-          # 安装 FC 依赖
-          cd deploy && npm install --omit=dev && cd ..
-
           # 查看部署目录结构
           echo "=== Deploy package ==="
-          find deploy -type f | head -30
-          echo ""
-          echo "=== index.js content (first 20 lines) ==="
-          head -20 deploy/index.js
+          find deploy -type f | head -20
 
       - name: Package with adm-zip
         run: |
@@ -75,10 +69,6 @@ jobs:
           echo "=== s.yaml content ==="
           cat s.yaml
           echo ""
-          echo "=== code.zip info ==="
-          ls -la code.zip
-          unzip -l code.zip
-          echo ""
           echo "=== Starting deploy ==="
-          # 显式指定配置文件
-          s deploy -y --debug --config ./s.yaml
+          s deploy -y
+          echo "✅ Deploy completed!"
