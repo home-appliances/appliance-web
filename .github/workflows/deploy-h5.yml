@@ -70,7 +70,7 @@ jobs:
 
       - name: Deploy with Serverless Devs
         run: |
-          s deploy -y
+          s deploy -y --debug 2>&1 | grep -E "skip upload|Uploading|codeChecksum|code zip"
           echo "✅ Deploy completed!"
 
       - name: Clean up
