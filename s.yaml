@@ -21,4 +21,4 @@ resources:
       diskSize: 512
       code: ./code.zip
       environmentVariables:
-        API_BACKEND: 'https://applican-applian-service-uzjmdtpnxs.cn-shenzhen-vpc.fcapp.run'
+        API_BACKEND: 'http://fc.cheapgo.top'
