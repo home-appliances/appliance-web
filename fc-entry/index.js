@@ -90,24 +90,14 @@ export async function handler(event, context) {
     const content = fs.readFileSync(fullPath);
     const contentType = getContentType(fullPath);
 
-    // 设置响应头
-    const headers = {
-      'content-type': contentType,
-      'cache-control': 'public, max-age=31536000',
-    };
+    // 使用 context 设置响应头
+    context.setHeader('content-type', contentType);
+    context.setHeader('cache-control', 'public, max-age=31536000');
 
-    // 返回响应对象
-    return {
-      statusCode: 200,
-      headers: headers,
-      body: content.toString('utf-8'),
-    };
+    return content;
   } catch (err) {
     console.error('Error:', err);
-    return {
-      statusCode: 404,
-      headers: { 'content-type': 'text/plain' },
-      body: 'Not Found',
-    };
+    context.setHeader('content-type', 'text/plain');
+    return 'Not Found';
   }
 }
