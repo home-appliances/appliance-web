@@ -53,6 +53,14 @@ jobs:
             zip.writeZip('code.zip');
             console.log('code.zip created successfully');
             console.log('Size:', require('fs').statSync('code.zip').size, 'bytes');
+
+            // 验证打包内容
+            const zip2 = new AdmZip('code.zip');
+            const entries = zip2.getEntries();
+            console.log('\\n=== ZIP contents ===');
+            entries.forEach(e => {
+              console.log(e.entryName);
+            });
           "
 
       - name: Install Serverless Devs
