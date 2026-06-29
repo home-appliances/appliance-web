@@ -78,8 +78,8 @@ jobs:
 
       - name: Deploy with Serverless Devs
         run: |
-          # 使用 --force 强制更新代码
-          s deploy -y --force
+          # 只更新代码，不更新配置
+          s deploy -y --code
           echo "✅ Deploy completed!"
 
       - name: Clean up
