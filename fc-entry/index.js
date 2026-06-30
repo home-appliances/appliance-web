@@ -1,4 +1,3 @@
-// FC 3.0 HTTP 触发器入口
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,95 +26,42 @@ function getContentType(filePath) {
   return MIME_TYPES[ext] || 'application/octet-stream';
 }
 
-function serveFile(filePath) {
-  try {
-    const content = fs.readFileSync(filePath);
-    const contentType = getContentType(filePath);
+// ✅ FC 3.0 HTTP 函数格式
+export async function handler(req, resp, context) {
+  console.log('Request URL:', req.url);
+  console.log('Request path:', req.path);
 
-    const isBinary = ['.png', '.jpg', '.jpeg', '.gif', '.ico'].some(ext =>
-      filePath.toLowerCase().endsWith(ext)
-    );
+  const reqPath = req.url || req.path || '/';
 
-    // ✅ 必须返回包含 statusCode 的对象
-    const response = {
-      statusCode: 200,
-      headers: {
-        'content-type': contentType,
-        'content-disposition': 'inline',  // 关键：覆盖默认 attachment
-        'cache-control': 'public, max-age=31536000'
-      },
-      isBase64Encoded: isBinary
-    };
-
-    if (isBinary) {
-      response.body = content.toString('base64');
-    } else {
-      response.body = content.toString('utf-8');
-    }
-
-    return response;
-  } catch (err) {
-    console.error('File read error:', err);
-    return {
-      statusCode: 404,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'content-disposition': 'inline'
-      },
-      body: 'Not Found',
-      isBase64Encoded: false
-    };
-  }
-}
-
-async function proxyRequest(event) {
-  const reqPath = event.requestURI || '/';
-  const url = `${API_BACKEND}${reqPath}`;
-
-  console.log('Proxying to:', url);
-
-  try {
-    const response = await fetch(url, {
-      method: event.httpMethod || 'GET',
-      headers: event.headers || {},
-      body: event.body || undefined,
-    });
-
-    const data = await response.text();
-
-    return {
-      statusCode: response.status,
-      headers: {
-        'content-type': response.headers.get('content-type') || 'application/json; charset=utf-8',
-        'content-disposition': 'inline'
-      },
-      body: data,
-      isBase64Encoded: false
-    };
-  } catch (err) {
-    console.error('Proxy error:', err);
-    return {
-      statusCode: 502,
-      headers: {
-        'content-type': 'application/json; charset=utf-8',
-        'content-disposition': 'inline'
-      },
-      body: JSON.stringify({ code: 502, message: 'Backend unavailable' }),
-      isBase64Encoded: false
-    };
-  }
-}
-
-export async function handler(event, context) {
-  console.log('Request:', event.requestURI);
-  console.log('Event:', JSON.stringify(event, null, 2));
-
-  const reqPath = event.requestURI || '/';
-
+  // API 代理
   if (reqPath.startsWith('/api')) {
-    return await proxyRequest(event);
+    try {
+      const url = `${API_BACKEND}${reqPath}`;
+      console.log('Proxying to:', url);
+
+      const response = await fetch(url, {
+        method: req.method,
+        headers: req.headers,
+        body: req.body,
+      });
+
+      const data = await response.text();
+
+      resp.setStatusCode(response.status);
+      resp.setHeader('content-type', response.headers.get('content-type') || 'application/json; charset=utf-8');
+      resp.setHeader('content-disposition', 'inline');
+      resp.send(data);
+
+    } catch (err) {
+      console.error('Proxy error:', err);
+      resp.setStatusCode(502);
+      resp.setHeader('content-type', 'application/json; charset=utf-8');
+      resp.send(JSON.stringify({ code: 502, message: 'Backend unavailable' }));
+    }
+    return;
   }
 
+  // 静态文件服务
   let filePath = reqPath;
 
   if (filePath === '/') {
@@ -134,6 +80,28 @@ export async function handler(event, context) {
     fullPath = path.join(STATIC_DIR, 'index.html');
   }
 
-  // ✅ 返回对象，不要直接返回字符串
-  return serveFile(fullPath);
+  try {
+    const content = fs.readFileSync(fullPath);
+    const contentType = getContentType(fullPath);
+
+    const isBinary = ['.png', '.jpg', '.jpeg', '.gif', '.ico'].some(ext =>
+      fullPath.toLowerCase().endsWith(ext)
+    );
+
+    resp.setStatusCode(200);
+    resp.setHeader('content-type', contentType);
+    resp.setHeader('content-disposition', 'inline');
+
+    if (isBinary) {
+      resp.send(content.toString('base64'));
+    } else {
+      resp.send(content.toString('utf-8'));
+    }
+
+  } catch (err) {
+    console.error('File read error:', err);
+    resp.setStatusCode(404);
+    resp.setHeader('content-type', 'text/plain; charset=utf-8');
+    resp.send('Not Found');
+  }
 }
