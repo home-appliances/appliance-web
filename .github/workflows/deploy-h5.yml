@@ -25,6 +25,11 @@ jobs:
       - name: Build H5
         run: npm run build:h5
 
+      - name: Clean old files
+        run: |
+          rm -rf deploy code.zip
+          echo "Cleaned old deploy files"
+
       - name: Prepare deploy package
         run: |
           # 创建部署目录
