@@ -19,6 +19,6 @@ resources:
       memorySize: 512
       cpu: 0.5
       diskSize: 512
-      code: ./code.zip
+      code: ./deploy
       environmentVariables:
         API_BACKEND: 'http://fc.cheapgo.top'
