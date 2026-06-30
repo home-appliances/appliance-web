@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const STATIC_DIR = path.join(__dirname, 'public');
-const API_BACKEND = process.env.API_BACKEND || 'http://fc.cheapgo.top';
+const API_BACKEND = process.env.API_BACKEND || 'https://fc.cheapgo.top';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -33,7 +33,7 @@ export async function handler(req, resp, context) {
 
   const reqPath = req.url || req.path || '/';
 
-  // API 代理
+  // API 请求代理到后端
   if (reqPath.startsWith('/api')) {
     try {
       const url = `${API_BACKEND}${reqPath}`;
@@ -61,7 +61,7 @@ export async function handler(req, resp, context) {
     return;
   }
 
-  // 静态文件服务
+  // 静态文件请求
   let filePath = reqPath;
 
   if (filePath === '/') {
