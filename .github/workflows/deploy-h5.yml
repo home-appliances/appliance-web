@@ -76,3 +76,9 @@ jobs:
           s deploy -y --debug 2>&1
           echo ""
           echo "✅ Deploy completed!"
+          echo ""
+          echo "=== Verifying deployment ==="
+          # 等待几秒让 FC 更新
+          sleep 5
+          # 检查函数状态
+          s info --debug 2>&1 | head -20
