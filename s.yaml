@@ -22,11 +22,3 @@ resources:
       code: ./code.zip
       environmentVariables:
         API_BACKEND: 'http://fc.cheapgo.top'
-      triggers:
-        - triggerName: defaultTrigger
-          triggerType: http
-          triggerConfig:
-            authType: anonymous
-            methods:
-              - GET
-              - POST
