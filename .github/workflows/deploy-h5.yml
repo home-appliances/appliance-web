@@ -78,12 +78,7 @@ jobs:
           ls -la code.zip
           echo ""
           echo "=== Starting deploy ==="
-          s deploy -y --debug 2>&1
+          # 使用 --force 强制更新代码
+          s deploy -y --force --debug 2>&1
           echo ""
           echo "✅ Deploy completed!"
-          echo ""
-          echo "=== Verifying deployment ==="
-          # 等待几秒让 FC 更新
-          sleep 5
-          # 检查函数状态
-          s info --debug 2>&1 | head -20
