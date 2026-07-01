@@ -1,0 +1,88 @@
+name: Renew SSL Certificate
+
+on:
+  schedule:
+    - cron: '0 3 1,31 * *'
+  workflow_dispatch:
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install acme.sh
+        run: curl https://get.acme.sh | sh -s email=admin@cheapgo.top
+
+      - name: Install Serverless Devs
+        run: npm install -g @serverless-devs/s
+
+      - name: Configure Serverless Devs
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+        run: s config add --AccessKeyID "$ALIYUN_ACCESS_KEY_ID" --AccessKeySecret "$ALIYUN_ACCESS_KEY_SECRET" -a default -f
+
+      - name: Configure acme.sh DNS API
+        env:
+          Ali_Key: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          Ali_Secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+        run: |
+          echo "Ali_Key=$Ali_Key" >> ~/.acme.sh/account.conf
+          echo "Ali_Secret=$Ali_Secret" >> ~/.acme.sh/account.conf
+
+      - name: Issue/ Renew Certificate (RSA 2048)
+        run: |
+          ~/.acme.sh/acme.sh --issue \
+            -d appliance-web.cheapgo.top \
+            --dns dns_ali \
+            --keylength 2048 \
+            --force
+
+      - name: Convert key to PKCS#1 format
+        run: |
+          openssl rsa \
+            -in ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key \
+            -out /tmp/key-pkcs1.pem \
+            -traditional
+
+      - name: Prepare certificate files
+        run: |
+          cp ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer /tmp/cert.pem
+          cp /tmp/key-pkcs1.pem /tmp/key.pem
+
+      - name: Create s.yaml for SSL deployment
+        run: |
+          cat > /tmp/s-ssl.yaml << 'EOF'
+          edition: 3.0.0
+          name: ssl-deploy
+          access: default
+
+          vars:
+            region: cn-shenzhen
+
+          resources:
+            ssl-domain:
+              component: fc3-domain
+              props:
+                region: ${vars.region}
+                domainName: appliance-web.cheapgo.top
+                protocol: HTTP,HTTPS
+                routeConfig:
+                  routes:
+                    - path: /*
+                      functionName: web
+                      qualifier: LATEST
+                certConfig:
+                  certType: upload
+                  certName: appliance-web-cheapgo
+                  certificate: ${file(./cert.pem)}
+                  privateKey: ${file(./key.pem)}
+          EOF
+          sed -i 's/^          //' /tmp/s-ssl.yaml
+
+      - name: Deploy certificate to FC
+        run: cd /tmp && s deploy -y -t /tmp/s-ssl.yaml
+
+      - name: Verify HTTPS
+        run: |
+          sleep 10
+          curl -sI https://appliance-web.cheapgo.top | head -5

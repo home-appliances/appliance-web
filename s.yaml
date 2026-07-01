@@ -1,5 +1,5 @@
 edition: 3.0.0
-name: jd-appliance-web
+name: appliance-web
 access: default
 
 vars:
@@ -7,19 +7,36 @@ vars:
 
 resources:
   web:
-    component: fc
+    component: fc3
     props:
       region: ${vars.region}
-      service:
-        name: appliance-service
-        description: '京东家电搜索服务'
-      function:
-        name: web
-        description: '京东家电搜索 H5 前端'
-        runtime: nodejs20
-        handler: index.handler
-        timeout: 30
-        memorySize: 512
-        code: ./deploy
-        environmentVariables:
-          API_BACKEND: 'https://fc.cheapgo.top'
+      serviceName: appliance
+      functionName: web
+      description: '家电搜索 H5 前端 (Taro + React)'
+      runtime: nodejs20
+      handler: index.handler
+      code: ./deploy
+      memorySize: 512
+      timeout: 30
+      environmentVariables:
+        API_BACKEND: 'https://appliance-api.cheapgo.top'
+      triggers:
+        - triggerName: http
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+
+  domain:
+    component: fc3-domain
+    props:
+      region: ${vars.region}
+      domainName: appliance-web.cheapgo.top
+      protocol: HTTP
+      routeConfig:
+        routes:
+          - path: /*
+            functionName: web
+            qualifier: LATEST
