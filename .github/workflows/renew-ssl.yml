@@ -41,15 +41,28 @@ jobs:
 
       - name: Upload certificate to FC
         run: |
-          # 用 jq --rawfile 从文件读取，避免 PEM 内容被破坏
-          jq -n \
-            --rawfile cert ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer \
-            --rawfile key ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key \
-            '{
-              "protocol": "HTTP,HTTPS",
-              "routeConfig": {"routes": [{"path": "/*", "functionName": "web", "qualifier": "LATEST"}]},
-              "certConfig": {"certType": "upload", "certName": "appliance-web-cheapgo", "certificate": $cert, "privateKey": $key}
-            }' > /tmp/fc-body.json
+          # 调试：检查文件是否存在
+          echo "=== Cert file ==="
+          ls -la ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer
+          echo "=== Key file ==="
+          ls -la ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key
+          echo "=== Key head ==="
+          head -1 ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key
+
+          # 用 Node.js 构建 JSON（避免 jq 处理 PEM 的问题）
+          node -e "
+          const fs = require('fs');
+          const cert = fs.readFileSync(process.env.HOME + '/.acme.sh/appliance-web.cheapgo.top/fullchain.cer', 'utf-8');
+          const key = fs.readFileSync(process.env.HOME + '/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key', 'utf-8');
+          const body = {
+            protocol: 'HTTP,HTTPS',
+            routeConfig: { routes: [{ path: '/*', functionName: 'web', qualifier: 'LATEST' }] },
+            certConfig: { certType: 'upload', certName: 'appliance-web-cheapgo', certificate: cert, privateKey: key }
+          };
+          fs.writeFileSync('/tmp/fc-body.json', JSON.stringify(body));
+          console.log('JSON written, key length:', key.length);
+          "
+
           aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body "$(cat /tmp/fc-body.json)"
 
       - name: Verify HTTPS
