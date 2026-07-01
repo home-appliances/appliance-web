@@ -41,17 +41,16 @@ jobs:
 
       - name: Upload certificate to FC
         run: |
-          CERT=$(cat ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer)
-          KEY=$(cat ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key)
-          BODY=$(jq -n \
-            --arg cert "$CERT" \
-            --arg key "$KEY" \
+          # 用 jq --rawfile 从文件读取，避免 PEM 内容被破坏
+          jq -n \
+            --rawfile cert ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer \
+            --rawfile key ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key \
             '{
               "protocol": "HTTP,HTTPS",
               "routeConfig": {"routes": [{"path": "/*", "functionName": "web", "qualifier": "LATEST"}]},
               "certConfig": {"certType": "upload", "certName": "appliance-web-cheapgo", "certificate": $cert, "privateKey": $key}
-            }')
-          aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body "$BODY"
+            }' > /tmp/fc-body.json
+          aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body @/tmp/fc-body.json
 
       - name: Verify HTTPS
         run: sleep 10 && curl -sI https://appliance-web.cheapgo.top | head -5
