@@ -1,15 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 加载 .env 文件（本地开发时使用）
-config({ path: path.join(__dirname, '..', '.env') });
-
 const STATIC_DIR = path.join(__dirname, 'public');
+// API 地址从环境变量读取（FC 控制台或 s.yaml 配置）
 const API_BACKEND = process.env.API_BACKEND || 'https://appliance-api.cheapgo.top';
 
 const MIME_TYPES = {

@@ -3,8 +3,5 @@
   "version": "1.0.0",
   "type": "module",
   "description": "FC Web 函数入口 - 静态文件服务 + API 反向代理",
-  "main": "index.js",
-  "dependencies": {
-    "dotenv": "^16.4.5"
-  }
+  "main": "index.js"
 }
