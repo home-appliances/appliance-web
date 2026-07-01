@@ -51,19 +51,17 @@ jobs:
 
       - name: Create s.yaml for SSL deployment
         run: |
-          cat > /tmp/s-ssl.yaml << 'EOF'
+          cat > /tmp/s-ssl.yaml << 'ENDOFYAML'
           edition: 3.0.0
           name: ssl-deploy
           access: default
-
           vars:
             region: cn-shenzhen
-
           resources:
             ssl-domain:
               component: fc3-domain
               props:
-                region: ${vars.region}
+                region: ${{ '{{' }} vars.region }}
                 domainName: appliance-web.cheapgo.top
                 protocol: HTTP,HTTPS
                 routeConfig:
@@ -74,10 +72,12 @@ jobs:
                 certConfig:
                   certType: upload
                   certName: appliance-web-cheapgo
-                  certificate: ${file(./cert.pem)}
-                  privateKey: ${file(./key.pem)}
-          EOF
+                  certificate: ${{ '{{' }} file(./cert.pem) }}
+                  privateKey: ${{ '{{' }} file(./key.pem) }}
+          ENDOFYAML
+          # 去掉 heredoc 带来的前导空格
           sed -i 's/^          //' /tmp/s-ssl.yaml
+          cat /tmp/s-ssl.yaml
 
       - name: Deploy certificate to FC
         run: cd /tmp && s deploy -y -t /tmp/s-ssl.yaml
