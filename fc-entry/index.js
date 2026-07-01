@@ -38,11 +38,17 @@ export async function handler(req, resp, context) {
       const url = `${API_BACKEND}${reqPath}`;
       console.log('Proxying to:', url);
 
-      const response = await fetch(url, {
+      const fetchOptions = {
         method: req.method,
         headers: req.headers,
-        body: req.body,
-      });
+      };
+
+      // 只有非 GET/HEAD 请求才添加 body
+      if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+        fetchOptions.body = req.body;
+      }
+
+      const response = await fetch(url, fetchOptions);
 
       const data = await response.text();
 
