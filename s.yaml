@@ -28,15 +28,3 @@ resources:
             methods:
               - GET
               - POST
-
-  domain:
-    component: fc3-domain
-    props:
-      region: ${vars.region}
-      domainName: appliance-web.cheapgo.top
-      protocol: HTTP
-      routeConfig:
-        routes:
-          - path: /*
-            functionName: web
-            qualifier: LATEST
