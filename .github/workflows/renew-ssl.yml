@@ -50,7 +50,7 @@ jobs:
               "routeConfig": {"routes": [{"path": "/*", "functionName": "web", "qualifier": "LATEST"}]},
               "certConfig": {"certType": "upload", "certName": "appliance-web-cheapgo", "certificate": $cert, "privateKey": $key}
             }' > /tmp/fc-body.json
-          aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body @/tmp/fc-body.json
+          aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body "$(cat /tmp/fc-body.json)"
 
       - name: Verify HTTPS
         run: sleep 10 && curl -sI https://appliance-web.cheapgo.top | head -5
