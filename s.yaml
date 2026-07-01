@@ -7,18 +7,19 @@ vars:
 
 resources:
   web:
-    component: fc3
+    component: fc
     props:
       region: ${vars.region}
-      serviceName: appliance-service
-      functionName: web
-      description: '京东家电搜索 H5 前端'
-      runtime: nodejs20
-      handler: index.handler
-      timeout: 30
-      memorySize: 512
-      cpu: 0.5
-      diskSize: 512
-      code: ./deploy
-      environmentVariables:
-        API_BACKEND: 'http://fc.cheapgo.top'
+      service:
+        name: appliance-service
+        description: '京东家电搜索服务'
+      function:
+        name: web
+        description: '京东家电搜索 H5 前端'
+        runtime: nodejs20
+        handler: index.handler
+        timeout: 30
+        memorySize: 512
+        code: ./deploy
+        environmentVariables:
+          API_BACKEND: 'http://fc.cheapgo.top'

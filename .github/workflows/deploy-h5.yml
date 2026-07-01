@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -46,39 +46,77 @@ jobs:
           echo "=== Deploy package ==="
           find deploy -type f | head -20
 
-      - name: Package with adm-zip
+      - name: Package with system zip
         run: |
-          npm install adm-zip --legacy-peer-deps --no-save
+          cd deploy && zip -r ../code.zip . && cd ..
+          ls -la code.zip
+
+      - name: Deploy to FC 2.0 with fc2 SDK
+        env:
+          ALIYUN_ACCOUNT_ID: ${{ secrets.ALIYUN_ACCOUNT_ID }}
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+        run: |
+          npm install @alicloud/fc2 --no-save
+
           node -e "
-          const AdmZip = require('adm-zip');
-          const zip = new AdmZip();
-          zip.addLocalFolder('deploy');
-          zip.writeZip('code.zip');
-          console.log('ZIP created');
+          const FC = require('@alicloud/fc2');
+          const fs = require('fs');
+
+          const client = new FC(process.env.ALIYUN_ACCOUNT_ID, {
+            accessKeyID: process.env.ALIYUN_ACCESS_KEY_ID,
+            accessKeySecret: process.env.ALIYUN_ACCESS_KEY_SECRET,
+            region: 'cn-shenzhen',
+          });
+
+          const SERVICE_NAME = 'appliance-service';
+          const FUNCTION_NAME = 'web';
+          const codeZip = fs.readFileSync('code.zip');
+
+          async function deploy() {
+            try {
+              // 尝试更新函数代码
+              await client.updateFunctionCode(SERVICE_NAME, FUNCTION_NAME, {
+                zipFile: codeZip.toString('base64'),
+              });
+              console.log('✅ Function code updated');
+            } catch (e) {
+              if (e.code === 'FunctionNotFound') {
+                // 函数不存在，先确保服务存在，再创建函数
+                console.log('Creating service and function...');
+                try {
+                  await client.createService(SERVICE_NAME, {
+                    description: '京东家电搜索服务',
+                  });
+                  console.log('Service created');
+                } catch (se) {
+                  if (se.code !== 'ServiceAlreadyExists') throw se;
+                  console.log('Service already exists');
+                }
+
+                await client.createFunction(SERVICE_NAME, {
+                  functionName: FUNCTION_NAME,
+                  description: '京东家电搜索 H5 前端',
+                  runtime: 'nodejs20',
+                  handler: 'index.handler',
+                  timeout: 30,
+                  memorySize: 512,
+                  code: {
+                    zipFile: codeZip.toString('base64'),
+                  },
+                  environmentVariables: {
+                    API_BACKEND: 'http://fc.cheapgo.top',
+                  },
+                });
+                console.log('✅ Function created');
+              } else {
+                throw e;
+              }
+            }
+          }
+
+          deploy().catch(err => {
+            console.error('❌ Deploy failed:', err.message || err);
+            process.exit(1);
+          });
           "
-          ls -la code.zip
-
-      - name: Install Serverless Devs
-        run: npm install @serverless-devs/s -g
-
-      - name: Configure credentials
-        run: |
-          s config add \
-            --AccountID "${{ secrets.ALIYUN_ACCOUNT_ID }}" \
-            --AccessKeyID "${{ secrets.ALIYUN_ACCESS_KEY_ID }}" \
-            --AccessKeySecret "${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}" \
-            -a default
-
-      - name: Deploy to FC
-        run: |
-          echo "=== s.yaml content ==="
-          cat s.yaml
-          echo ""
-          echo "=== code.zip info ==="
-          ls -la code.zip
-          echo ""
-          echo "=== Starting deploy ==="
-          # 使用 --force 强制更新代码
-          s deploy -y --force --debug 2>&1
-          echo ""
-          echo "✅ Deploy completed!"
