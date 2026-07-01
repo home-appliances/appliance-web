@@ -19,7 +19,7 @@ resources:
       memorySize: 512
       timeout: 30
       environmentVariables:
-        API_BACKEND: 'https://appliance-api.cheapgo.top'
+        API_BACKEND: 'http://api-ojlfojnolj.cn-shenzhen.fcapp.run'
       triggers:
         - triggerName: http
           triggerType: http
