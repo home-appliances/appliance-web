@@ -12,24 +12,25 @@ jobs:
       - name: Install acme.sh
         run: curl https://get.acme.sh | sh -s email=admin@cheapgo.top
 
-      - name: Install Serverless Devs
-        run: npm install -g @serverless-devs/s
+      - name: Install aliyun CLI
+        run: |
+          curl -fsSL "https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz" -o aliyun-cli.tgz
+          tar xzf aliyun-cli.tgz
+          sudo mv aliyun /usr/local/bin/
 
-      - name: Configure Serverless Devs
+      - name: Configure credentials
         env:
           ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-        run: s config add --AccessKeyID "$ALIYUN_ACCESS_KEY_ID" --AccessKeySecret "$ALIYUN_ACCESS_KEY_SECRET" -a default -f
-
-      - name: Configure acme.sh DNS API
-        env:
-          Ali_Key: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-          Ali_Secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
         run: |
-          echo "Ali_Key=$Ali_Key" >> ~/.acme.sh/account.conf
-          echo "Ali_Secret=$Ali_Secret" >> ~/.acme.sh/account.conf
+          aliyun configure set --mode AK \
+            --access-key-id "$ALIYUN_ACCESS_KEY_ID" \
+            --access-key-secret "$ALIYUN_ACCESS_KEY_SECRET" \
+            --region "cn-shenzhen"
+          echo "Ali_Key=$ALIYUN_ACCESS_KEY_ID" >> ~/.acme.sh/account.conf
+          echo "Ali_Secret=$ALIYUN_ACCESS_KEY_SECRET" >> ~/.acme.sh/account.conf
 
-      - name: Issue/ Renew Certificate (RSA 2048)
+      - name: Issue/Renew Certificate (RSA 2048)
         run: |
           ~/.acme.sh/acme.sh --issue \
             -d appliance-web.cheapgo.top \
@@ -38,52 +39,19 @@ jobs:
             --server letsencrypt \
             --force
 
-      - name: Convert key to PKCS#1 format
+      - name: Upload certificate to FC
         run: |
-          openssl rsa \
-            -in ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key \
-            -out /tmp/key-pkcs1.pem \
-            -traditional
-
-      - name: Prepare certificate files
-        run: |
-          cp ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer /tmp/cert.pem
-          cp /tmp/key-pkcs1.pem /tmp/key.pem
-
-      - name: Create s.yaml for SSL deployment
-        run: |
-          cat > /tmp/s-ssl.yaml << 'ENDOFYAML'
-          edition: 3.0.0
-          name: ssl-deploy
-          access: default
-          vars:
-            region: cn-shenzhen
-          resources:
-            ssl-domain:
-              component: fc3-domain
-              props:
-                region: ${{ '{{' }} vars.region }}
-                domainName: appliance-web.cheapgo.top
-                protocol: HTTP,HTTPS
-                routeConfig:
-                  routes:
-                    - path: /*
-                      functionName: web
-                      qualifier: LATEST
-                certConfig:
-                  certType: upload
-                  certName: appliance-web-cheapgo
-                  certificate: ${{ '{{' }} file(./cert.pem) }}
-                  privateKey: ${{ '{{' }} file(./key.pem) }}
-          ENDOFYAML
-          # 去掉 heredoc 带来的前导空格
-          sed -i 's/^          //' /tmp/s-ssl.yaml
-          cat /tmp/s-ssl.yaml
-
-      - name: Deploy certificate to FC
-        run: cd /tmp && s deploy -y -t /tmp/s-ssl.yaml
+          CERT=$(cat ~/.acme.sh/appliance-web.cheapgo.top/fullchain.cer)
+          KEY=$(cat ~/.acme.sh/appliance-web.cheapgo.top/appliance-web.cheapgo.top.key)
+          BODY=$(jq -n \
+            --arg cert "$CERT" \
+            --arg key "$KEY" \
+            '{
+              "protocol": "HTTP,HTTPS",
+              "routeConfig": {"routes": [{"path": "/*", "functionName": "web", "qualifier": "LATEST"}]},
+              "certConfig": {"certType": "upload", "certName": "appliance-web-cheapgo", "certificate": $cert, "privateKey": $key}
+            }')
+          aliyun fc PUT /2023-03-30/custom-domains/appliance-web.cheapgo.top --body "$BODY"
 
       - name: Verify HTTPS
-        run: |
-          sleep 10
-          curl -sI https://appliance-web.cheapgo.top | head -5
+        run: sleep 10 && curl -sI https://appliance-web.cheapgo.top | head -5
