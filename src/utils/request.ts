@@ -17,10 +17,7 @@ const API_ORIGIN = `http://${API_HOST}:${API_PORT}`
 // 小程序：用开发机局域网地址
 const getBaseUrl = () => {
   if (process.env.TARO_ENV === 'h5') {
-    // 生产环境直接调用后端 API
-    if (process.env.NODE_ENV === 'production') {
-      return 'https://fc.cheapgo.top/api'
-    }
+    // H5 环境统一走相对路径，由 fc-entry 代理转发到后端
     return '/api'
   }
   return `${API_ORIGIN}/api`
