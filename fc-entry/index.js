@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const STATIC_DIR = path.join(__dirname, 'public');
-const API_BACKEND = 'https://fc.cheapgo.top';
+const API_BACKEND = 'http://fc.cheapgo.top';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
