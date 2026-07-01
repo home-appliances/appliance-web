@@ -75,10 +75,13 @@ jobs:
 
           async function deploy() {
             try {
-              // 尝试更新函数代码
+              // 尝试更新函数代码和配置
               await client.updateFunction(SERVICE_NAME, FUNCTION_NAME, {
                 code: {
                   zipFile: codeZip.toString('base64'),
+                },
+                environmentVariables: {
+                  API_BACKEND: 'https://fc.cheapgo.top',
                 },
               });
               console.log('✅ Function code updated');
@@ -89,6 +92,11 @@ jobs:
                 try {
                   await client.createService(SERVICE_NAME, {
                     description: '京东家电搜索服务',
+                    vpcConfig: {
+                      vpcId: 'vpc-wz9panhs3lr4y30c8cd75',
+                      vswitchIds: ['vsw-wz9x49y8clwt46f3086x7'],
+                      securityGroupId: 'sg-wz95y2xh9e7ajlongxaj',
+                    },
                   });
                   console.log('Service created');
                 } catch (se) {
