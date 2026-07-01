@@ -107,7 +107,7 @@ jobs:
                     zipFile: codeZip.toString('base64'),
                   },
                   environmentVariables: {
-                    API_BACKEND: 'http://fc.cheapgo.top',
+                    API_BACKEND: 'https://fc.cheapgo.top',
                   },
                 });
                 console.log('✅ Function created');

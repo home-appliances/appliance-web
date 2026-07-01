@@ -22,4 +22,4 @@ resources:
         memorySize: 512
         code: ./deploy
         environmentVariables:
-          API_BACKEND: 'http://fc.cheapgo.top'
+          API_BACKEND: 'https://fc.cheapgo.top'
