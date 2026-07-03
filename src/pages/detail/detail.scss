@@ -10,6 +10,7 @@
 /* H5 端样式 */
 .page {
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* 加载状态 */
@@ -40,12 +41,16 @@
 .content {
   flex: 1;
   height: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 产品主图区域 */
 .product-hero {
+  width: 100%;
   background: #fff;
   margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .product-image-container {
@@ -54,12 +59,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   box-sizing: border-box;
 
   @if $platform == 'h5' {
     height: 500px;
-    padding: 24px 60px;
+    padding: 24px 0;
   } @else {
     min-height: 480px;
     max-height: 800px;
@@ -70,10 +74,9 @@
 .product-image {
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: auto;
   object-fit: contain;
   display: block;
+  margin: 0 auto;
 
   @if $platform == 'h5' {
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
@@ -83,6 +86,25 @@
     border-radius: 8px;
   }
 }
+
+/* H5 端强制覆盖 taro-image-core 样式 */
+/* #ifdef h5 */
+.product-image-container taro-image-core {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.product-image-container taro-image-core img {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+/* #endif */
 
 .product-image-placeholder {
   display: flex;
