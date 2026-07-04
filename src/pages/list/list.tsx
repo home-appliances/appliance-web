@@ -66,7 +66,6 @@ export default function List() {
         }
         setTotalPages(res.pagination?.totalPages || 1)
         setPage(pageNum)
-        // 搜索无结果时，加载推荐数据
         if (pageNum === 1 && list.length === 0) {
           loadRecommend()
         }
@@ -83,13 +82,11 @@ export default function List() {
     }
   }
 
-  // 加载更多
   const loadMore = () => {
     if (loadingMore || page >= totalPages || loading) return
     fetchProducts(keyword, page + 1)
   }
 
-  // 滚动到底部时自动加载
   const onScrollToLower = () => {
     loadMore()
   }
@@ -114,33 +111,40 @@ export default function List() {
 
   return (
     <View className='page'>
-      {/* 顶部搜索栏 */}
-      <View className='topbar'>
-        <View className='back' onClick={() => Taro.navigateBack()}>
-          <Text className='back-icon'>‹</Text>
+      {/* Header */}
+      <View className='header'>
+        <View className='back-btn' onClick={() => {
+          const pages = Taro.getCurrentPages()
+          if (pages.length > 1) {
+            Taro.navigateBack()
+          } else {
+            Taro.reLaunch({ url: '/pages/index/index' })
+          }
+        }}>
+          <Text className='back-icon'>←</Text>
         </View>
-        <View className='search-box'>
-          <View className='search-icon-wrap'>
-            <Text className='search-icon-text'>⌕</Text>
-          </View>
+        <View className='search-input-wrap'>
           <Input
             className='search-input'
-            placeholder='搜索家电...'
-            placeholderClass='placeholder'
-            value={keyword}
-            onInput={e => setKeyword(e.detail.value)}
+            placeholder='搜索家电产品...'
+            placeholderClass='search-placeholder'
+            value={keyword || ''}
+            onInput={e => setKeyword(e.detail.value || '')}
             confirmType='search'
             onConfirm={handleSearch}
           />
-          {keyword && (
-            <View className='search-clear' onClick={() => setKeyword('')}>
-              <Text className='search-clear-text'>×</Text>
-            </View>
-          )}
+          <Text className='search-icon'>⌕</Text>
         </View>
       </View>
 
-      {/* 搜索结果列表 */}
+      {/* 结果头部 */}
+      <View className='result-header'>
+        <Text className='result-count'>
+          找到 <Text className='result-count-num'>{products.length}</Text> 件产品
+        </Text>
+      </View>
+
+      {/* 产品列表 */}
       <ScrollView
         className='list-scroll'
         scrollY
@@ -148,50 +152,43 @@ export default function List() {
         lowerThreshold={100}
       >
         <View className='list-wrapper'>
-        <View className='list'>
           {loading ? (
             <View className='loading-state'>
               <View className='loading-spinner' />
               <Text className='loading-text'>搜索中...</Text>
             </View>
           ) : products.length > 0 ? (
-            <View className='result-count'>
-              <Text className='result-count-text'>共 {products.length} 个结果</Text>
+            <View className='product-grid'>
+              {products.map(item => (
+                <View
+                  key={item.id}
+                  className='product-card'
+                  onClick={() => Taro.navigateTo({ url: `/pages/detail/detail?id=${item.id}` })}
+                >
+                  <View className='product-image'>
+                    {item.img ? (
+                      <Image src={fixImageUrl(item.img)} mode='aspectFill' style='width:100%;height:100%' />
+                    ) : (
+                      <Text className='product-image-placeholder'>⬡</Text>
+                    )}
+                  </View>
+                  <View className='product-content'>
+                    <Text className='product-brand'>{item.tag?.[0] || '品牌'}</Text>
+                    <HighlightText text={item.title} className='product-name' />
+                    {item.tag?.length > 0 && (
+                      <View className='product-specs'>
+                        {item.tag.slice(0, 2).map((t, i) => (
+                          <Text key={i} className='spec-tag'>{decodeHtmlEntities(t)}</Text>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                </View>
+              ))}
             </View>
           ) : null}
 
-          {products.map(item => (
-            <View
-              key={item.id}
-              className='card'
-              onClick={() => Taro.navigateTo({ url: `/pages/detail/detail?id=${item.id}` })}
-            >
-              <View className='card-img'>
-                {item.img ? (
-                  <Image src={fixImageUrl(item.img)} mode='aspectFill' style='width:100%;height:100%' />
-                ) : (
-                  <View className='card-img-placeholder'>
-                    <Text className='card-img-icon'>⬡</Text>
-                  </View>
-                )}
-              </View>
-              <View className='card-info'>
-                <HighlightText text={item.title} className='card-title' />
-                {item.tag?.length > 0 && (
-                  <View className='card-tags'>
-                    {item.tag.slice(0, 3).map((t, i) => (
-                      <HighlightText key={i} text={decodeHtmlEntities(t)} className='card-tag' />
-                    ))}
-                  </View>
-                )}
-                <View className='card-action'>
-                  <Text className='card-action-text'>查看详情 →</Text>
-                </View>
-              </View>
-            </View>
-          ))}
-
-          {/* 加载状态提示 */}
+          {/* 加载更多 */}
           {products.length > 0 && (
             <View className='load-more'>
               {loadingMore ? (
@@ -251,7 +248,6 @@ export default function List() {
               )}
             </View>
           )}
-        </View>
         </View>
       </ScrollView>
     </View>
