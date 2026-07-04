@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import {
   getSearchHistory,
   addSearchHistory,
@@ -17,20 +17,22 @@ export default function Index() {
   const [showSuggest, setShowSuggest] = useState(false)
   const debounceTimer = useRef<any>(null)
 
-  useEffect(() => {
+  useDidShow(() => {
     setSearchHistory(getSearchHistory())
-  }, [])
+    setKeyword('')
+    setSuggestions([])
+    setShowSuggest(false)
+  })
 
-  const go = (kw: string) => {
+  const go = useCallback((kw: string) => {
     if (!kw.trim()) return
     setShowSuggest(false)
     const newHistory = addSearchHistory(kw)
     setSearchHistory(newHistory)
     Taro.navigateTo({ url: `/pages/list/list?keyword=${encodeURIComponent(kw)}` })
-  }
+  }, [])
 
-  // 防抖输入：300ms 后请求搜索建议
-  const handleInput = (value: string) => {
+  const handleInput = useCallback((value: string) => {
     setKeyword(value)
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current)
@@ -54,14 +56,14 @@ export default function Index() {
         setShowSuggest(false)
       })
     }, 300)
-  }
+  }, [])
 
-  const handleRemoveHistory = (kw: string) => {
+  const handleRemoveHistory = useCallback((kw: string) => {
     const newHistory = removeSearchHistory(kw)
     setSearchHistory(newHistory)
-  }
+  }, [])
 
-  const handleClearHistory = () => {
+  const handleClearHistory = useCallback(() => {
     Taro.showModal({
       title: '提示',
       content: '确定清空搜索历史吗？',
@@ -72,81 +74,116 @@ export default function Index() {
         }
       }
     })
-  }
+  }, [])
+
+  const hotKeywords = ['格力空调', '海尔冰箱', '美的洗衣机', '小米电视', '热水器']
 
   return (
-    <View className='page'>
-      <View className='page-content'>
-        {/* 搜索框 */}
-        <View className='search'>
-          <View className='search-icon-wrap'>
-            <Text className='search-icon-text'>⌕</Text>
-          </View>
-          <Input
-            className='search-input'
-            placeholder='搜索家电型号、品牌...'
-            placeholderClass='placeholder'
-            value={keyword}
-            onInput={e => handleInput(e.detail.value)}
-            confirmType='search'
-            onConfirm={() => go(keyword)}
-            onBlur={() => {
-              // 延迟隐藏，让点击建议项的事件先触发
-              setTimeout(() => setShowSuggest(false), 200)
-            }}
-          />
-          {keyword && (
-            <View className='search-clear' onClick={() => { setKeyword(''); setSuggestions([]); setShowSuggest(false) }}>
-              <Text className='search-clear-text'>×</Text>
+    <View className='index-page'>
+      <View className='index-container'>
+        {/* Header */}
+        <View className='index-header'>
+          <View className='index-header-top'>
+            <Text className='index-greeting'>Hi, <Text className='index-greeting-strong'>欢迎回来</Text></Text>
+            <View className='index-avatar'>
+              <Text className='index-avatar-text'>U</Text>
             </View>
-          )}
+          </View>
+          <Text className='index-title'>智能<Text className='index-highlight'>家电</Text>查询</Text>
+          <Text className='index-subtitle'>发现适合你的家电产品</Text>
         </View>
 
-        {/* 搜索建议下拉 */}
-        {showSuggest && suggestions.length > 0 && (
-          <View className='suggest-dropdown'>
-            {suggestions.map((item, index) => (
-              <View key={index} className='suggest-item' onClick={() => go(item)}>
-                <Text className='suggest-icon'>⌕</Text>
-                <Text className='suggest-text'>{item}</Text>
-              </View>
-            ))}
+        {/* Search */}
+        <View className='index-search-section'>
+          <View className='index-search-box'>
+            <Input
+              className='index-search-input'
+              placeholder='搜索家电产品、品牌、型号...'
+              placeholderClass='index-search-placeholder'
+              value={keyword || ''}
+              onInput={e => handleInput(e.detail.value || '')}
+              confirmType='search'
+              onConfirm={() => go(keyword)}
+              onBlur={() => {
+                setTimeout(() => setShowSuggest(false), 200)
+              }}
+            />
+            <View className='index-search-btn' onClick={() => go(keyword)}>
+              <Text className='index-search-btn-icon'>⌕</Text>
+            </View>
           </View>
-        )}
 
-        {/* 搜索历史（本地缓存） */}
-        <View className='section'>
-          <View className='section-header'>
-            <Text className='section-title'>搜索历史</Text>
-            {searchHistory.length > 0 && (
-              <View className='section-action' onClick={handleClearHistory}>
-                <Text className='section-action-text'>清空</Text>
-              </View>
-            )}
-          </View>
-          {searchHistory.length > 0 ? (
-            <View className='history-list'>
-              {searchHistory.map((item, index) => (
-                <View key={index} className='history-item' onClick={() => go(item)}>
-                  <View className='history-dot' />
-                  <Text className='history-text'>{item}</Text>
-                  <View
-                    className='history-delete'
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleRemoveHistory(item)
-                    }}
-                  >
-                    <Text className='history-delete-text'>×</Text>
-                  </View>
+          {/* 搜索建议 */}
+          {showSuggest && suggestions.length > 0 && (
+            <View className='index-suggest-dropdown'>
+              {suggestions.map((item, index) => (
+                <View key={index} className='index-suggest-item' onClick={() => go(item)}>
+                  <Text className='index-suggest-icon'>⌕</Text>
+                  <Text className='index-suggest-text'>{item}</Text>
                 </View>
               ))}
             </View>
-          ) : (
-            <View className='empty-state'>
-              <Text className='empty-text'>暂无搜索历史</Text>
-            </View>
           )}
+
+          {/* 热门搜索 */}
+          <View className='index-hot-searches'>
+            <View className='index-section-header'>
+              <Text className='index-section-title'>热门搜索</Text>
+            </View>
+            <View className='index-hot-tags'>
+              {hotKeywords.map((item, index) => (
+                <View key={index} className='index-hot-tag' onClick={() => go(item)}>
+                  {index < 2 && <Text className='index-fire'>🔥</Text>}
+                  <Text className='index-hot-tag-text'>{item}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* 搜索历史 */}
+          <View className='index-recent-section'>
+            <View className='index-section-header'>
+              <Text className='index-section-title'>搜索历史</Text>
+              {searchHistory.length > 0 && (
+                <View className='index-section-action' onClick={handleClearHistory}>
+                  <Text className='index-section-action-text'>清空</Text>
+                </View>
+              )}
+            </View>
+            {searchHistory.length > 0 ? (
+              <View className='index-recent-list'>
+                {searchHistory.map((item, index) => (
+                  <View key={index} className='index-recent-item' onClick={() => go(item)}>
+                    <View className='index-recent-icon'>
+                      <Text className='index-recent-icon-text'>◷</Text>
+                    </View>
+                    <View className='index-recent-content'>
+                      <Text className='index-recent-title'>{item}</Text>
+                      <Text className='index-recent-meta'>{index === 0 ? '刚刚浏览' : `${index}小时前`}</Text>
+                    </View>
+                    <View
+                      className='index-recent-delete'
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemoveHistory(item)
+                      }}
+                    >
+                      <Text className='index-recent-delete-text'>×</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View className='index-empty-state'>
+                <Text className='index-empty-text'>暂无搜索历史</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View className='index-footer'>
+          <Text className='index-footer-text'>FRESH APPLIANCE SEARCH</Text>
         </View>
       </View>
     </View>

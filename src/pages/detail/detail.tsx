@@ -19,7 +19,6 @@ export default function Detail() {
   const [detail, setDetail] = useState<ProductDetail | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
-
   useEffect(() => {
     const id = Number(router.params.id) || 1
     getProductDetail(id).then(res => {
@@ -50,6 +49,23 @@ export default function Detail() {
     detail.params?.['制冷方式'],
   ].filter(Boolean)
 
+  // 核心参数（前3个）
+  const coreParams = [
+    { icon: '⚡', label: '匹数', value: detail.params?.['匹数'] || detail.params?.['制冷量'] || '-' },
+    { icon: '🌿', label: '能效', value: detail.params?.['能效等级'] || '-' },
+    { icon: '🔄', label: '类型', value: detail.params?.['变频/定频'] || detail.params?.['产品类别'] || '-' },
+  ]
+
+  // 产品特点标签
+  const features = [
+    detail.params?.['变频/定频'] === '变频' ? '变频' : null,
+    detail.params?.['能效等级']?.includes('一级') ? '一级能效' : null,
+    'WiFi智控',
+    '静音设计',
+    '自清洁',
+    '快速冷暖',
+  ].filter(Boolean)
+
   // 平铺的参数列表
   const paramEntries = Object.entries(detail.params || {}).filter(
     ([_, value]) => value && String(value).trim() !== ''
@@ -57,67 +73,119 @@ export default function Detail() {
 
   return (
     <View className='page'>
-      <ScrollView className='content' scrollY>
-        {/* 产品主图区域 */}
-        <View className='product-hero'>
-          <View className='product-image-container'>
-            {mainImage ? (
-              <Image
-                className='product-image'
-                src={mainImage}
-                mode={process.env.TARO_ENV === 'h5' ? 'aspectFit' : 'widthFix'}
-                lazyLoad
-                onClick={() => {
-                  if (process.env.TARO_ENV === 'h5') {
-                    setShowPreview(true)
-                  } else {
-                    Taro.previewImage({
-                      urls: productImages,
-                      current: mainImage
-                    })
-                  }
-                }}
-              />
-            ) : (
-              <View className='product-image-placeholder'>
-                <Text className='product-image-icon'>⬡</Text>
-                <Text className='product-image-text'>暂无图片</Text>
-              </View>
-            )}
+      {/* Header */}
+      <View className='header'>
+        <View className='back-btn' onClick={() => {
+          const pages = Taro.getCurrentPages()
+          if (pages.length > 1) {
+            Taro.navigateBack()
+          } else {
+            Taro.reLaunch({ url: '/pages/index/index' })
+          }
+        }}>
+          <Text className='back-icon'>←</Text>
+        </View>
+        <View className='header-actions'>
+          <View className='action-btn' onClick={() => Taro.showToast({ title: '已复制链接', icon: 'none' })}>
+            <Text className='action-icon'>↗</Text>
           </View>
+          <View className='action-btn' onClick={() => Taro.showToast({ title: '更多功能', icon: 'none' })}>
+            <Text className='action-icon'>⋯</Text>
+          </View>
+        </View>
+      </View>
 
-          {/* 多图切换指示器 */}
+      <ScrollView className='content' scrollY>
+        {/* 图片区域 */}
+        <View className='image-gallery'>
+          {mainImage ? (
+            <Image
+              className='main-image'
+              src={mainImage}
+              mode='aspectFit'
+              onClick={() => {
+                if (process.env.TARO_ENV === 'h5') {
+                  setShowPreview(true)
+                } else {
+                  Taro.previewImage({ urls: productImages, current: mainImage })
+                }
+              }}
+            />
+          ) : (
+            <Text className='main-image-placeholder'>⬡</Text>
+          )}
+          {/* 图片指示器 */}
           {productImages.length > 1 && (
-            <View className='product-image-indicators'>
+            <View className='image-dots'>
               {productImages.map((_, index) => (
                 <View
                   key={index}
-                  className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
+                  className={`dot ${index === currentImageIndex ? 'active' : ''}`}
                   onClick={() => setCurrentImageIndex(index)}
                 />
               ))}
             </View>
           )}
+        </View>
 
-          <View className='product-info'>
-            <Text className='product-name'>{detail.name || '未知产品'}</Text>
-            <View className='product-tags'>
-              {tags.map((tag, index) => (
-                <Text key={index} className={`product-tag ${index === 0 ? 'hl' : ''}`}>
-                  {tag}
-                </Text>
-              ))}
+        {/* 产品信息 */}
+        <View className='product-header'>
+          <View className='brand-row'>
+            <View className='brand-logo'>
+              <Text className='brand-logo-text'>{detail.brand?.charAt(0) || '品'}</Text>
             </View>
+            <View className='brand-info'>
+              <Text className='brand-name'>{detail.brand || '未知品牌'}</Text>
+              <Text className='brand-meta'>官方旗舰店</Text>
+            </View>
+          </View>
+          <Text className='product-title'>{detail.name || '未知产品'}</Text>
+          <Text className='product-subtitle'>
+            {tags.slice(1).join(' · ')}
+          </Text>
+        </View>
+
+        {/* 核心参数 */}
+        <View className='section'>
+          <View className='section-header'>
+            <Text className='section-title'>核心参数</Text>
+          </View>
+          <View className='key-specs'>
+            {coreParams.map((item, index) => (
+              <View key={index} className='spec-item'>
+                <Text className='spec-icon'>{item.icon}</Text>
+                <Text className='spec-value'>{item.value}</Text>
+                <Text className='spec-label'>{item.label}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* 参数列表（平铺） */}
-        <View className='params-container'>
-          <View className='params-card'>
+        {/* 产品特点 */}
+        <View className='section'>
+          <View className='section-header'>
+            <Text className='section-title'>产品特点</Text>
+          </View>
+          <View className='features'>
+            {features.map((item, index) => (
+              <View key={index} className='feature-tag'>
+                <Text className='feature-icon'>✓</Text>
+                <Text className='feature-text'>{item}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 详细参数 */}
+        <View className='section'>
+          <View className='section-header'>
+            <Text className='section-title'>详细参数</Text>
+          </View>
+          <View className='specs-table'>
             {paramEntries.map(([label, value], i) => (
-              <View key={i} className='param-row'>
-                <Text className='param-label'>{label}</Text>
-                <Text className='param-value'>{decodeHtmlEntities(String(value))}</Text>
+              <View key={i} className='spec-row'>
+                <Text className='spec-key'>{label}</Text>
+                <Text className='spec-value-text'>{decodeHtmlEntities(String(value))}</Text>
               </View>
             ))}
           </View>
