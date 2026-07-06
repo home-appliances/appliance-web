@@ -62,7 +62,12 @@ export default function List() {
         if (pageNum === 1) {
           setProducts(list)
         } else {
-          setProducts(prev => [...prev, ...list])
+          // 去重：过滤掉已存在的产品
+          setProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id))
+            const newList = list.filter(p => !existingIds.has(p.id))
+            return [...prev, ...newList]
+          })
         }
         setTotalPages(res.pagination?.totalPages || 1)
         setPage(pageNum)
@@ -133,7 +138,9 @@ export default function List() {
             confirmType='search'
             onConfirm={handleSearch}
           />
-          <Text className='search-icon'>⌕</Text>
+          <View className='search-btn' onClick={handleSearch}>
+            <Text className='search-btn-icon'>⌕</Text>
+          </View>
         </View>
       </View>
 
