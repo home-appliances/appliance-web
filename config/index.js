@@ -3,7 +3,7 @@ const outputRoot = process.env.TARO_ENV === 'h5' ? 'dist/h5' : 'dist/weapp'
 const FixCompPlugin = require('./fix-comp')
 
 const config = {
-  projectName: 'jd-appliance-search-web',
+  projectName: 'appliance-search-web',
   date: '2024-6-2',
   designWidth: 750,
   deviceRatio: {
