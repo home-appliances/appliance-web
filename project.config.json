@@ -10,9 +10,9 @@
     "compileHotReLoad": false,
     "postcss": false,
     "minified": true,
-    "newFeature": true,
-    "lazyCodeLoading": "requiredComponents"
+    "newFeature": true
   },
   "compileType": "miniprogram",
-  "condition": {}
+  "condition": {},
+  "lazyCodeLoading": "requiredComponents"
 }
