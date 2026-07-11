@@ -1,11 +1,17 @@
 import Taro from '@tarojs/taro'
 
-// API 基础地址
+// ════════════════════════════════════════════════════════════
+// 后端线上地址
+//   H5 生产走相对路径 /api，由 fc-entry 代理转发到后端。
+//   小程序与真机预览直接请求线上域名（localhost / 局域网 IP 在真机不可达）。
+//   （曾尝试用 Taro defineConstants 注入 process.env.API_HOST，但 Taro 4.2 watch
+//    增量编译下替换不可靠，小程序运行时报 "process is not defined"，故改用此常量。）
+// ════════════════════════════════════════════════════════════
 const API_ORIGIN = 'https://appliance-api.cheapgo.top'
 
 // 根据环境动态设置 BASE_URL
 // H5：开发环境走 `/api`（devServer proxy），生产环境直接调用后端
-// 小程序：直接用线上地址
+// 小程序：直接请求线上后端
 const getBaseUrl = () => {
   if (process.env.TARO_ENV === 'h5') {
     // H5 环境统一走相对路径，由 fc-entry 代理转发到后端

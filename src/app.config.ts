@@ -17,6 +17,6 @@ export default defineAppConfig({
     uploadFile: 30000,
     downloadFile: 30000
   },
-  // 组件按需注入
+  // 启用组件按需注入，加速启动
   lazyCodeLoading: 'requiredComponents'
 })
