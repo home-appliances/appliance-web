@@ -32,6 +32,10 @@ interface RequestOptions {
   url: string
   data?: Record<string, any>
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  // 失败重试次数（默认 2 次），网络错误 / 5xx / 业务 code === -1 时触发
+  retry?: number
+  // 是否打印响应数据（默认 false；响应体可能很大，避免无谓的日志开销）
+  logResponse?: boolean
 }
 
 interface ApiResponse<T = any> {
@@ -46,13 +50,23 @@ interface ApiResponse<T = any> {
   }
 }
 
-export const request = <T = any>(options: RequestOptions): Promise<ApiResponse<T>> => {
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+// 判断是否值得重试：网络层失败、5xx、或后端业务层返回失败（code === -1，常见于超时）
+const shouldRetry = (res: Taro.request.SuccessCallbackResult | null, err: any, body?: ApiResponse): boolean => {
+  if (err) return true
+  if (!res) return false
+  if (res.statusCode >= 500) return true
+  if (res.statusCode === 200 && body && typeof body.code === 'number' && body.code !== 0) return true
+  return false
+}
+
+// 单次请求（不含重试逻辑），返回 { res, body } 供上层判断
+const requestOnce = <T = any>(
+  options: RequestOptions
+): Promise<{ res: Taro.request.SuccessCallbackResult; body: ApiResponse<T> }> => {
   return new Promise((resolve, reject) => {
     const fullUrl = `${BASE_URL}${options.url}`
-    console.log('[Request] 发起请求:', fullUrl)
-    console.log('[Request] 请求参数:', options.data)
-    console.log('[Request] 当前环境:', process.env.TARO_ENV)
-
     Taro.request({
       url: fullUrl,
       data: options.data || {},
@@ -62,21 +76,52 @@ export const request = <T = any>(options: RequestOptions): Promise<ApiResponse<T
         'Content-Type': 'application/json'
       },
       success: (res) => {
-        console.log('[Request] 请求成功:', res.statusCode)
-        console.log('[Request] 响应数据:', res.data)
-        if (res.statusCode === 200) {
-          resolve(res.data as ApiResponse<T>)
-        } else {
-          reject(new Error(`请求失败: ${res.statusCode}`))
-        }
+        resolve({ res, body: res.data as ApiResponse<T> })
       },
       fail: (err) => {
-        console.error('[Request] 请求失败:', err)
-        console.error('[Request] 错误详情:', JSON.stringify(err))
         reject(err)
       }
     })
   })
+}
+
+export const request = async <T = any>(options: RequestOptions): Promise<ApiResponse<T>> => {
+  const maxRetry = options.retry ?? 2
+  const logResponse = options.logResponse ?? false
+  let lastErr: any = null
+
+  for (let attempt = 0; attempt <= maxRetry; attempt++) {
+    try {
+      const { res, body } = await requestOnce<T>(options)
+      // 仅在需要时打印响应体，避免 1MB+ 日志开销
+      console.log(`[Request] ${options.url} attempt ${attempt + 1}: ${res.statusCode}`)
+      if (logResponse) {
+        console.log('[Request] 响应数据:', res.data)
+      }
+
+      // 业务层失败（后端返回 200 但 code 非 0，如连接超时）也走重试
+      if (shouldRetry(res, null, body) && attempt < maxRetry) {
+        await sleep(500 * Math.pow(2, attempt)) // 0.5s, 1s, 2s...
+        continue
+      }
+
+      if (res.statusCode === 200) {
+        return body
+      }
+      throw new Error(`请求失败: ${res.statusCode}`)
+    } catch (err) {
+      lastErr = err
+      console.error(`[Request] ${options.url} attempt ${attempt + 1} 失败:`, JSON.stringify(err))
+      if (attempt < maxRetry) {
+        await sleep(500 * Math.pow(2, attempt))
+        continue
+      }
+      throw err
+    }
+  }
+
+  // 理论上不会走到这里，兜底
+  throw lastErr || new Error('请求失败')
 }
 
 // 搜索产品
@@ -84,7 +129,8 @@ export const searchProducts = (keyword: string, page: number = 1) => {
   console.log('[API] 搜索产品:', keyword, 'page:', page)
   return request({
     url: '/search',
-    data: { keyword, page }
+    data: { keyword, page },
+    retry: 3
   })
 }
 

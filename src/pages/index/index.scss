@@ -82,17 +82,19 @@
 /* Search Section */
 .index-search-section {
   padding-top: 20px;
+  position: relative;
 }
 
 .index-search-box {
   position: relative;
   margin-bottom: 56px;
+  z-index: 102;
 }
 
 .index-search-input {
   width: 100%;
   height: 112px;
-  padding: 30px 112px 30px 48px;
+  padding: 0 112px 0 48px;
   border: 4px solid transparent;
   border-radius: 40px;
   font-size: 30px;
@@ -103,7 +105,7 @@
   font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft Yahei", sans-serif;
   box-sizing: border-box;
   display: block;
-  line-height: normal;
+  line-height: 112px;
 }
 
 .index-search-placeholder {
@@ -147,14 +149,15 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 116px;
+  top: 120px;
   background: #fff;
   border-radius: 0 0 24px 24px;
   border: 2px solid #e0efe9;
   border-top: none;
-  z-index: 100;
+  z-index: 101;
   box-shadow: 0 8px 24px rgba(0, 184, 148, 0.1);
   overflow: hidden;
+  padding-top: 20px;
 }
 
 .index-suggest-item {

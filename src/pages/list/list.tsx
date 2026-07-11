@@ -167,7 +167,12 @@ export default function List() {
                 >
                   <View className='product-image'>
                     {item.img ? (
-                      <Image src={fixImageUrl(item.img)} mode='aspectFill' style='width:100%;height:100%' />
+                      <Image
+                        src={fixImageUrl(item.img)}
+                        mode='aspectFill'
+                        lazyLoad
+                        style='width:100%;height:100%'
+                      />
                     ) : (
                       <Text className='product-image-placeholder'>⬡</Text>
                     )}
@@ -239,7 +244,7 @@ export default function List() {
                       onClick={() => Taro.navigateTo({ url: `/pages/detail/detail?id=${p.id}` })}
                     >
                       {p.images?.[0] && (
-                        <Image className='recommend-img' src={fixImageUrl(p.images[0])} mode='aspectFill' />
+                        <Image className='recommend-img' src={fixImageUrl(p.images[0])} mode='aspectFill' lazyLoad />
                       )}
                       <Text className='recommend-name'>{p.name}</Text>
                     </View>
