@@ -98,7 +98,7 @@ export default function Index() {
           <View className='index-search-box'>
             <Input
               className='index-search-input'
-              placeholder='搜索家电产品、品牌、型号...'
+              placeholder='搜索家电产品、品牌'
               placeholderClass='index-search-placeholder'
               value={keyword || ''}
               onInput={e => handleInput(e.detail.value || '')}
@@ -111,19 +111,20 @@ export default function Index() {
             <View className='index-search-btn' onClick={() => go(keyword)}>
               <Text className='index-search-btn-icon'>⌕</Text>
             </View>
+
+            {/* 搜索建议 */}
+            {showSuggest && suggestions.length > 0 && (
+              <View className='index-suggest-dropdown'>
+                {suggestions.map((item, index) => (
+                  <View key={index} className='index-suggest-item' onClick={() => go(item)}>
+                    <Text className='index-suggest-icon'>⌕</Text>
+                    <Text className='index-suggest-text'>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
-          {/* 搜索建议 */}
-          {showSuggest && suggestions.length > 0 && (
-            <View className='index-suggest-dropdown'>
-              {suggestions.map((item, index) => (
-                <View key={index} className='index-suggest-item' onClick={() => go(item)}>
-                  <Text className='index-suggest-icon'>⌕</Text>
-                  <Text className='index-suggest-text'>{item}</Text>
-                </View>
-              ))}
-            </View>
-          )}
 
           {/* 热门搜索 */}
           <View className='index-hot-searches'>

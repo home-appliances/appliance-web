@@ -1,20 +1,17 @@
 import Taro from '@tarojs/taro'
 
 // ════════════════════════════════════════════════════════════
-// ⚠️ 小程序真机预览的后端地址
-//   小程序运行在手机上，localhost 会指向手机自身，必须填开发机的局域网 IP。
-//   换网络 / 换电脑后，改下面两个值即可，无需改动其他业务代码。
-//   查本机 IP：Windows 执行 ipconfig，找 WLAN 的 IPv4 地址。
+// 后端线上地址
+//   H5 生产走相对路径 /api，由 fc-entry 代理转发到后端。
+//   小程序与真机预览直接请求线上域名（localhost / 局域网 IP 在真机不可达）。
 //   （曾尝试用 Taro defineConstants 注入 process.env.API_HOST，但 Taro 4.2 watch
 //    增量编译下替换不可靠，小程序运行时报 "process is not defined"，故改用此常量。）
 // ════════════════════════════════════════════════════════════
-const API_HOST = '192.168.1.7'
-const API_PORT = '3000'
-const API_ORIGIN = `http://${API_HOST}:${API_PORT}`
+const API_ORIGIN = 'https://appliance-api.cheapgo.top'
 
 // 根据环境动态设置 BASE_URL
 // H5：开发环境走 `/api`（devServer proxy），生产环境直接调用后端
-// 小程序：用开发机局域网地址
+// 小程序：直接请求线上后端
 const getBaseUrl = () => {
   if (process.env.TARO_ENV === 'h5') {
     // H5 环境统一走相对路径，由 fc-entry 代理转发到后端
