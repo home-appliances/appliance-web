@@ -1,20 +1,20 @@
 import Taro from '@tarojs/taro'
 
 // ════════════════════════════════════════════════════════════
-// 后端线上地址
-//   H5 生产走相对路径 /api，由 fc-entry 代理转发到后端。
-//   小程序与真机预览直接请求线上域名（localhost / 局域网 IP 在真机不可达）。
-//   （曾尝试用 Taro defineConstants 注入 process.env.API_HOST，但 Taro 4.2 watch
-//    增量编译下替换不可靠，小程序运行时报 "process is not defined"，故改用此常量。）
+// 后端地址配置
+//   H5 走相对路径 /api（devServer proxy 或 fc-entry 代理）。
+//   小程序通过 API_ORIGIN 环境变量指定后端地址。
+//   开发模式默认 http://localhost:3000，生产模式通过 .env 配置。
+//   真机预览时 localhost 不可达，需改为局域网 IP。
 // ════════════════════════════════════════════════════════════
-const API_ORIGIN = 'https://appliance-api.cheapgo.top'
+const IS_DEV = process.env.NODE_ENV === 'development'
+const API_ORIGIN = process.env.API_ORIGIN || (IS_DEV ? 'http://localhost:3000' : '')
 
 // 根据环境动态设置 BASE_URL
-// H5：开发环境走 `/api`（devServer proxy），生产环境直接调用后端
-// 小程序：直接请求线上后端
+// H5：统一走相对路径 /api（devServer proxy 或 fc-entry 代理）
+// 小程序：开发模式请求本地后端，生产模式请求线上后端
 const getBaseUrl = () => {
   if (process.env.TARO_ENV === 'h5') {
-    // H5 环境统一走相对路径，由 fc-entry 代理转发到后端
     return '/api'
   }
   return `${API_ORIGIN}/api`
