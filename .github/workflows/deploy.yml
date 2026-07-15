@@ -35,4 +35,6 @@ jobs:
         run: s config add --AccessKeyID ${{ secrets.ALIYUN_ACCESS_KEY_ID }} --AccessKeySecret ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }} -a default -f
 
       - name: Deploy to FC
+        env:
+          API_BACKEND: ${{ secrets.API_BACKEND }}
         run: s deploy -y --use-local

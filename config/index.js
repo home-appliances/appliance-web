@@ -93,7 +93,7 @@ const config = {
       port: 10086,
       proxy: {
         '/api': {
-          target: 'https://fc.cheapgo.top',
+          target: 'http://localhost:3000',
           changeOrigin: true,
           secure: false
         }

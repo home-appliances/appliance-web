@@ -3,6 +3,11 @@ node_modules/
 
 # Environment
 .env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.example
 
 # Build outputs
 dist/
@@ -21,6 +26,9 @@ fc-entry/public/
 # OS
 .DS_Store
 Thumbs.db
+
+# WeChat DevTools (私有配置，含本地编译选项)
+project.private.config.json
 
 # Logs
 *.log

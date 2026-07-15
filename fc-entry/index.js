@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const STATIC_DIR = path.join(__dirname, 'public');
 // API 地址从环境变量读取（FC 控制台或 s.yaml 配置）
-const API_BACKEND = process.env.API_BACKEND || 'https://api-ojlfojnolj.cn-shenzhen-vpc.fcapp.run';
+const API_BACKEND = process.env.API_BACKEND || 'http://localhost:3000';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
