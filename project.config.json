@@ -4,7 +4,7 @@
   "description": "家电搜索小程序",
   "appid": "wx1370ef25c5c046d0",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": false,
     "enhance": false,
     "compileHotReLoad": false,
@@ -14,5 +14,6 @@
   },
   "compileType": "miniprogram",
   "condition": {},
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "simulatorPluginLibVersion": {}
 }

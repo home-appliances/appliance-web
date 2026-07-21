@@ -76,7 +76,7 @@ export default function Index() {
     })
   }, [])
 
-  const hotKeywords = ['格力空调', '海尔冰箱', '美的洗衣机', '小米电视', '热水器']
+  const hotKeywords = ['格力空调', '美的空调', '一级能效', '1.5P', '海尔空调', '变频']
 
   return (
     <View className='index-page'>
