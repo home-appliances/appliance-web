@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, Image, ScrollView } from '@tarojs/components'
+import { View, Text, Image, ScrollView, Swiper, SwiperItem } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { getProductDetail, fixImageUrl } from '../../utils/request'
 import { decodeHtmlEntities } from '../../utils/decode'
@@ -73,44 +73,35 @@ export default function Detail() {
 
   return (
     <View className='page'>
-      {/* Header */}
-      <View className='header'>
-        <View className='back-btn' onClick={() => {
-          const pages = Taro.getCurrentPages()
-          if (pages.length > 1) {
-            Taro.navigateBack()
-          } else {
-            Taro.reLaunch({ url: '/pages/index/index' })
-          }
-        }}>
-          <Text className='back-icon'>←</Text>
-        </View>
-        <View className='header-actions'>
-          <View className='action-btn' onClick={() => Taro.showToast({ title: '已复制链接', icon: 'none' })}>
-            <Text className='action-icon'>↗</Text>
-          </View>
-          <View className='action-btn' onClick={() => Taro.showToast({ title: '更多功能', icon: 'none' })}>
-            <Text className='action-icon'>⋯</Text>
-          </View>
-        </View>
-      </View>
-
       <ScrollView className='content' scrollY>
-        {/* 图片区域 */}
+        {/* 图片区域 - 支持左右滑动切换 */}
         <View className='image-gallery'>
-          {mainImage ? (
-            <Image
-              className='main-image'
-              src={mainImage}
-              mode='aspectFit'
-              onClick={() => {
-                if (process.env.TARO_ENV === 'h5') {
-                  setShowPreview(true)
-                } else {
-                  Taro.previewImage({ urls: productImages, current: mainImage })
-                }
-              }}
-            />
+          {productImages.length > 0 ? (
+            <Swiper
+              className='image-swiper'
+              current={currentImageIndex}
+              onChange={(e) => setCurrentImageIndex(e.detail.current)}
+              duration={300}
+              circular={productImages.length > 1}
+              style={{ width: '100%', height: '100%' }}
+            >
+              {productImages.map((img, index) => (
+                <SwiperItem key={index}>
+                  <Image
+                    className='main-image'
+                    src={img}
+                    mode='aspectFit'
+                    onClick={() => {
+                      if (process.env.TARO_ENV === 'h5') {
+                        setShowPreview(true)
+                      } else {
+                        Taro.previewImage({ urls: productImages, current: img })
+                      }
+                    }}
+                  />
+                </SwiperItem>
+              ))}
+            </Swiper>
           ) : (
             <Text className='main-image-placeholder'>⬡</Text>
           )}
@@ -124,6 +115,12 @@ export default function Detail() {
                   onClick={() => setCurrentImageIndex(index)}
                 />
               ))}
+            </View>
+          )}
+          {/* 图片计数（右上角） */}
+          {productImages.length > 1 && (
+            <View className='image-counter'>
+              <Text className='image-counter-text'>{currentImageIndex + 1} / {productImages.length}</Text>
             </View>
           )}
         </View>
