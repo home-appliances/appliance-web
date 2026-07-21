@@ -111,14 +111,6 @@ export const getSuggest = (keyword: string) => {
   })
 }
 
-// 获取推荐数据
-export const getRecommend = () => {
-  return request<{ brands: any[]; products: any[] }>({
-    url: '/recommend',
-    data: { limit: 6 }
-  })
-}
-
 // 获取分类列表（树形结构）
 export const getCategories = () => {
   return request<Array<{

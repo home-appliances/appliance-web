@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Input, Image, ScrollView } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { searchProducts, getRecommend, fixImageUrl } from '../../utils/request'
+import { searchProducts, fixImageUrl } from '../../utils/request'
 import { addSearchHistory } from '../../utils/storage'
 import { decodeHtmlEntities } from '../../utils/decode'
 import HighlightText from '../../components/HighlightText/HighlightText'
@@ -14,27 +14,12 @@ interface Product {
   tag: string[]
 }
 
-interface RecommendBrand {
-  brand: string
-  name: string
-  count: number
-}
-
-interface RecommendProduct {
-  id: number
-  name: string
-  brand: string
-  images: string[]
-}
-
 export default function List() {
   const router = useRouter()
   const [keyword, setKeyword] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
-  const [recommendBrands, setRecommendBrands] = useState<RecommendBrand[]>([])
-  const [recommendProducts, setRecommendProducts] = useState<RecommendProduct[]>([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -66,15 +51,11 @@ export default function List() {
         }
         setTotalPages(res.pagination?.totalPages || 1)
         setPage(pageNum)
-        if (pageNum === 1 && list.length === 0) {
-          loadRecommend()
-        }
       }
     } catch (e) {
       console.error(e)
       if (pageNum === 1) {
         setProducts([])
-        loadRecommend()
       }
     } finally {
       setLoading(false)
@@ -91,18 +72,6 @@ export default function List() {
     loadMore()
   }
 
-  const loadRecommend = async () => {
-    try {
-      const res = await getRecommend()
-      if (res.code === 0 && res.data) {
-        setRecommendBrands(res.data.brands || [])
-        setRecommendProducts(res.data.products || [])
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   const handleSearch = () => {
     if (!keyword.trim()) return
     addSearchHistory(keyword)
@@ -113,16 +82,6 @@ export default function List() {
     <View className='page'>
       {/* Header */}
       <View className='header'>
-        <View className='back-btn' onClick={() => {
-          const pages = Taro.getCurrentPages()
-          if (pages.length > 1) {
-            Taro.navigateBack()
-          } else {
-            Taro.reLaunch({ url: '/pages/index/index' })
-          }
-        }}>
-          <Text className='back-icon'>←</Text>
-        </View>
         <View className='search-input-wrap'>
           <Input
             className='search-input'
@@ -202,50 +161,14 @@ export default function List() {
             </View>
           )}
 
-          {/* 空结果推荐 */}
+          {/* 空状态提示 */}
           {searched && products.length === 0 && !loading && (
             <View className='empty-recommend'>
               <View className='empty-header'>
                 <Text className='empty-icon-text'>∅</Text>
                 <Text className='empty-text'>未找到相关商品</Text>
-                <Text className='empty-hint'>换个关键词试试，或看看以下推荐</Text>
+                <Text className='empty-hint'>换个关键词试试</Text>
               </View>
-
-              {recommendBrands.length > 0 && (
-                <View className='recommend-section'>
-                  <Text className='recommend-title'>热门品牌</Text>
-                  <View className='recommend-brands'>
-                    {recommendBrands.map((b) => (
-                      <View
-                        key={b.brand}
-                        className='recommend-brand-tag'
-                        onClick={() => { setKeyword(b.name); fetchProducts(b.name, 1) }}
-                      >
-                        <Text className='recommend-brand-name'>{b.name}</Text>
-                        <Text className='recommend-brand-count'>{b.count}款</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {recommendProducts.length > 0 && (
-                <View className='recommend-section'>
-                  <Text className='recommend-title'>热门商品</Text>
-                  {recommendProducts.map((p) => (
-                    <View
-                      key={p.id}
-                      className='recommend-card'
-                      onClick={() => Taro.navigateTo({ url: `/pages/detail/detail?id=${p.id}` })}
-                    >
-                      {p.images?.[0] && (
-                        <Image className='recommend-img' src={fixImageUrl(p.images[0])} mode='aspectFill' />
-                      )}
-                      <Text className='recommend-name'>{p.name}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
             </View>
           )}
         </View>
