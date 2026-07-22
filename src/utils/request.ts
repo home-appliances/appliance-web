@@ -111,6 +111,14 @@ export const getSuggest = (keyword: string) => {
   })
 }
 
+// 获取热门搜索
+export const getHotSearches = (limit: number = 10) => {
+  return request<string[]>({
+    url: '/hot',
+    data: { limit }
+  })
+}
+
 // 获取分类列表（树形结构）
 export const getCategories = () => {
   return request<Array<{

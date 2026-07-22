@@ -2,15 +2,18 @@ import { useState, useRef, useCallback } from 'react'
 import { View, Text, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import {getSearchHistory,addSearchHistory,removeSearchHistory,clearSearchHistory} from '../../utils/storage'
-import { getSuggest } from '../../utils/request'
+import { getSuggest, getHotSearches } from '../../utils/request'
 import { prefetchSearch } from '../../utils/searchPrefetch'
 import './index.scss'
+
+const FALLBACK_HOT_KEYWORDS = ['格力空调', '美的空调', '一级能效', '海尔空调', '变频']
 
 export default function Index() {
   const [keyword, setKeyword] = useState('')
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggest, setShowSuggest] = useState(false)
+  const [hotKeywords, setHotKeywords] = useState<string[]>(FALLBACK_HOT_KEYWORDS)
   const debounceTimer = useRef<any>(null)
 
   useDidShow(() => {
@@ -18,6 +21,17 @@ export default function Index() {
     setKeyword('')
     setSuggestions([])
     setShowSuggest(false)
+    getHotSearches(8)
+      .then((res) => {
+        if (res.code === 0 && Array.isArray(res.data) && res.data.length > 0) {
+          setHotKeywords(res.data)
+        } else {
+          setHotKeywords(FALLBACK_HOT_KEYWORDS)
+        }
+      })
+      .catch(() => {
+        setHotKeywords(FALLBACK_HOT_KEYWORDS)
+      })
     try {
       Taro.preloadPage?.({ url: '/pages/list/list' })
     } catch {
@@ -77,8 +91,6 @@ export default function Index() {
       }
     })
   }, [])
-
-  const hotKeywords = ['格力空调', '美的空调', '一级能效', '海尔空调', '变频']
 
   return (
     <View className='index-page'>
