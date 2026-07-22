@@ -4,9 +4,9 @@
 
 ## 线上地址
 
-| 环境 | 地址 |
-|------|------|
-| H5 | https://appliance-web.cheapgo.top |
+| 环境     | 地址                                |
+|--------|-----------------------------------|
+| H5     | https://appliance-web.cheapgo.top |
 | 后端 API | https://appliance-api.cheapgo.top |
 
 ## 技术栈
@@ -113,8 +113,8 @@ const API_BACKEND = process.env.API_BACKEND || 'https://api-ojlfojnolj.cn-shenzh
 
 ## 环境变量
 
-| 变量名 | 说明 | 示例 |
-|--------|------|------|
+| 变量名           | 说明        | 示例                                  |
+|---------------|-----------|-------------------------------------|
 | `API_BACKEND` | 后端 API 地址 | `https://appliance-api.cheapgo.top` |
 
 ## SSL 证书
@@ -125,6 +125,6 @@ const API_BACKEND = process.env.API_BACKEND || 'https://api-ojlfojnolj.cn-shenzh
 
 ## 相关仓库
 
-| 仓库 | 说明 |
-|------|------|
+| 仓库                                                                                | 说明     |
+|-----------------------------------------------------------------------------------|--------|
 | [home-appliances/appliance-api](https://github.com/home-appliances/appliance-api) | 后端 API |
