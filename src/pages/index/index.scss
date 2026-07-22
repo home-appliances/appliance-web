@@ -19,44 +19,6 @@
   padding: 120px 0 60px;
 }
 
-.index-header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 60px;
-  width: 100%;
-}
-
-.index-greeting {
-  font-size: 28px;
-  color: #8ab5a5;
-  font-weight: 400;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.index-greeting-strong {
-  color: #1a3a2f;
-  font-weight: bold;
-}
-
-.index-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #00b894 0%, #0984e3 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.index-avatar-text {
-  font-size: 32px;
-  color: #fff;
-  font-weight: 600;
-}
-
 .index-title {
   font-size: 56px;
   font-weight: 700;
@@ -139,8 +101,12 @@
 }
 
 .index-search-btn-icon {
-  font-size: 44px;
+  font-size: 56px;
+  line-height: 1;
   color: #fff;
+  font-weight: 700;
+  display: block;
+  transform: scale(1.15);
 }
 
 /* 搜索建议 */
@@ -293,14 +259,19 @@
 }
 
 .index-recent-icon-text {
-  font-size: 36px;
+  font-size: 40px;
+  line-height: 1;
   color: #00b894;
+  font-weight: 600;
 }
 
 .index-recent-content {
   flex: 1;
   min-width: 0;
   margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .index-recent-title {
@@ -310,12 +281,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
+  line-height: 1.3;
 }
 
 .index-recent-meta {
   font-size: 22px;
   color: #8ab5a5;
-  margin-top: 4px;
+  display: block;
+  line-height: 1.3;
 }
 
 .index-recent-delete {
@@ -343,13 +317,4 @@
 .index-empty-text {
   font-size: 28px;
   color: #8ab5a5;
-}
-
-/* Footer */
-.index-footer {
-  padding: 48px 0;
-  text-align: center;
-  color: #8ab5a5;
-  font-size: 22px;
-  letter-spacing: 4px;
 }

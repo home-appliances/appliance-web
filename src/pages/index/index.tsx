@@ -1,13 +1,9 @@
 import { useState, useRef, useCallback } from 'react'
 import { View, Text, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import {
-  getSearchHistory,
-  addSearchHistory,
-  removeSearchHistory,
-  clearSearchHistory
-} from '../../utils/storage'
+import {getSearchHistory,addSearchHistory,removeSearchHistory,clearSearchHistory} from '../../utils/storage'
 import { getSuggest } from '../../utils/request'
+import { prefetchSearch } from '../../utils/searchPrefetch'
 import './index.scss'
 
 export default function Index() {
@@ -22,6 +18,11 @@ export default function Index() {
     setKeyword('')
     setSuggestions([])
     setShowSuggest(false)
+    try {
+      Taro.preloadPage?.({ url: '/pages/list/list' })
+    } catch {
+      // 忽略不支持的环境
+    }
   })
 
   const go = useCallback((kw: string) => {
@@ -29,6 +30,7 @@ export default function Index() {
     setShowSuggest(false)
     const newHistory = addSearchHistory(kw)
     setSearchHistory(newHistory)
+    prefetchSearch(kw)
     Taro.navigateTo({ url: `/pages/list/list?keyword=${encodeURIComponent(kw)}` })
   }, [])
 
@@ -55,7 +57,7 @@ export default function Index() {
         setSuggestions([])
         setShowSuggest(false)
       })
-    }, 300)
+    }, 180)
   }, [])
 
   const handleRemoveHistory = useCallback((kw: string) => {
@@ -76,19 +78,13 @@ export default function Index() {
     })
   }, [])
 
-  const hotKeywords = ['格力空调', '美的空调', '一级能效', '1.5P', '海尔空调', '变频']
+  const hotKeywords = ['格力空调', '美的空调', '一级能效', '海尔空调', '变频']
 
   return (
     <View className='index-page'>
       <View className='index-container'>
         {/* Header */}
         <View className='index-header'>
-          <View className='index-header-top'>
-            <Text className='index-greeting'>Hi, <Text className='index-greeting-strong'>欢迎回来</Text></Text>
-            <View className='index-avatar'>
-              <Text className='index-avatar-text'>U</Text>
-            </View>
-          </View>
           <Text className='index-title'>智能<Text className='index-highlight'>家电</Text>查询</Text>
           <Text className='index-subtitle'>发现适合你的家电产品</Text>
         </View>
@@ -180,11 +176,6 @@ export default function Index() {
               </View>
             )}
           </View>
-        </View>
-
-        {/* Footer */}
-        <View className='index-footer'>
-          <Text className='index-footer-text'>FRESH APPLIANCE SEARCH</Text>
         </View>
       </View>
     </View>
