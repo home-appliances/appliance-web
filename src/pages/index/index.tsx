@@ -20,19 +20,23 @@ const HOT_DISPLAY_COUNT = 8
 
 type SearchEntry = 'typed' | 'quick'
 
-const isAirConditionKeyword = (kw: string) =>
-  /空调|挂机|柜机|变频|能效|冷暖|匹|新风|中央空调|空调扇/.test(kw)
-
-/** 只保留空调相关词，不足时用兜底补齐 */
+/** 优先使用真实热门搜索，不足时用兜底补齐 */
 function fillHotKeywords(list: string[], target = HOT_DISPLAY_COUNT): string[] {
   const seen = new Set<string>()
   const result: string[] = []
-  for (const kw of [...list, ...FALLBACK_HOT_KEYWORDS]) {
+  for (const kw of list) {
     const trimmed = (kw || '').trim()
-    if (!trimmed || seen.has(trimmed) || !isAirConditionKeyword(trimmed)) continue
+    if (!trimmed || seen.has(trimmed)) continue
     seen.add(trimmed)
     result.push(trimmed)
     if (result.length >= target) break
+  }
+  for (const kw of FALLBACK_HOT_KEYWORDS) {
+    if (result.length >= target) break
+    const trimmed = (kw || '').trim()
+    if (!trimmed || seen.has(trimmed)) continue
+    seen.add(trimmed)
+    result.push(trimmed)
   }
   return result
 }
