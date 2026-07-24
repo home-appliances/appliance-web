@@ -169,14 +169,20 @@ export default function Detail() {
           <View className='section-header'>
             <Text className='section-title'>详细参数</Text>
           </View>
-          <View className='specs-table'>
-            {paramEntries.map(([label, value], i) => (
-              <View key={i} className='spec-row'>
-                <Text className='spec-key'>{label}</Text>
-                <Text className='spec-value-text'>{decodeHtmlEntities(String(value))}</Text>
-              </View>
-            ))}
-          </View>
+          {paramEntries.length > 0 ? (
+            <View className='specs-table'>
+              {paramEntries.map(([label, value], i) => (
+                <View key={i} className='spec-row'>
+                  <Text className='spec-key'>{label}</Text>
+                  <Text className='spec-value-text'>{decodeHtmlEntities(String(value))}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className='specs-empty'>
+              <Text className='specs-empty-text'>该产品暂无详细参数</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
