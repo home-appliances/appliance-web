@@ -4,6 +4,7 @@ page {
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft Yahei', sans-serif;
   -webkit-font-smoothing: antialiased;
   color: #222222;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* H5 端全局样式 */
@@ -14,6 +15,7 @@ body, html {
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft Yahei', sans-serif;
   -webkit-font-smoothing: antialiased;
   color: #222222;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* #ifdef h5 */
@@ -21,6 +23,7 @@ body, html {
 #app {
   width: 100%;
   min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .taro-page {
@@ -33,5 +36,31 @@ body, html {
   width: 100%;
   min-height: 100vh;
   background-color: #f0f9f7;
+}
+
+/* Taro H5 点击态：禁止系统蓝底，保留业务自己的 :active */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button,
+[onclick],
+.taro-view,
+.taro-text,
+taro-view-core,
+taro-text-core {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 点击后偶发残留的焦点描边 */
+a:focus,
+button:focus,
+.taro-view:focus,
+taro-view-core:focus {
+  outline: none;
 }
 /* #endif */

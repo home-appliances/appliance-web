@@ -1,35 +1,35 @@
-# Dependencies
+# 依赖项
 node_modules/
 
-# Environment
+# 环境
 .env
 .env.local
 .env.*.local
 .env.production
 .env.staging
 
-# Build outputs
+# 构建输出
 dist/
 deploy/
 code.zip
 fc-deploy/
 fc-entry/public/
 
-# Cache
+# 缓存
 .swc/
 
-# Claude & Agents
+# Claude 与智能体
 .claude/
 .agents/
 
-# OS
+# 操作系统
 .DS_Store
 Thumbs.db
 
 # WeChat DevTools (私有配置，含本地编译选项)
 project.private.config.json
 
-# Logs
+# 日志
 *.log
 npm-debug.log*
 .omc/

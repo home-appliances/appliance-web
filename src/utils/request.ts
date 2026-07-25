@@ -111,11 +111,11 @@ export const getSuggest = (keyword: string) => {
   })
 }
 
-// 获取推荐数据
-export const getRecommend = () => {
-  return request<{ brands: any[]; products: any[] }>({
-    url: '/recommend',
-    data: { limit: 6 }
+// 获取热门搜索
+export const getHotSearches = (limit: number = 10) => {
+  return request<string[]>({
+    url: '/hot',
+    data: { limit }
   })
 }
 
