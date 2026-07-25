@@ -284,6 +284,7 @@
   flex-shrink: 0;
   box-shadow: 0 4px 14px rgba(26, 58, 47, 0.04);
   overflow: visible;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .index-hot-tag:active {
@@ -344,6 +345,7 @@
   cursor: pointer;
   min-height: 104px;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .index-recent-item:last-child {
