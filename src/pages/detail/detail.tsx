@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { View, Text, Image, ScrollView, Swiper, SwiperItem } from '@tarojs/components'
-import Taro, { useRouter } from '@tarojs/taro'
+import { useState, useEffect, useRef } from 'react'
+import { View, Text, Image, ScrollView, Swiper, SwiperItem, Button } from '@tarojs/components'
+import Taro, { useRouter, useShareAppMessage, useShareTimeline } from '@tarojs/taro'
 import { getProductDetail, fixImageUrl } from '../../utils/request'
 import { decodeHtmlEntities } from '../../utils/decode'
 import './detail.scss'
@@ -33,6 +33,8 @@ export default function Detail() {
   const [detail, setDetail] = useState<ProductDetail | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
+  const detailRef = useRef<ProductDetail | null>(null)
+  detailRef.current = detail
 
   useEffect(() => {
     const id = Number(router.params.id) || 1
@@ -43,6 +45,38 @@ export default function Detail() {
       }
     })
   }, [])
+
+  useShareAppMessage(() => {
+    const d = detailRef.current
+    const id = Number(router.params.id) || d?.id || 1
+    const title = d ? `${d.brand || ''} ${d.name || ''}`.trim() : '家电参数详情'
+    const path = `/pages/detail/detail?id=${id}`
+    const imgs = d ? resolveImages(d) : []
+    return { title, path, imageUrl: imgs[0] || undefined }
+  })
+
+  useShareTimeline(() => {
+    const d = detailRef.current
+    const id = Number(router.params.id) || d?.id || 1
+    const title = d ? `${d.brand || ''} ${d.name || ''}`.trim() : '家电参数详情'
+    const imgs = d ? resolveImages(d) : []
+    return { title, query: `id=${id}`, imageUrl: imgs[0] || undefined }
+  })
+
+  const handleH5Share = async () => {
+    const d = detailRef.current
+    const id = Number(router.params.id) || d?.id || 1
+    const title = d ? `${d.brand || ''} ${d.name || ''}`.trim() : '家电参数详情'
+    const url = `${window.location.origin}/pages/detail/detail?id=${id}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: title, url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        Taro.showToast({ title: '链接已复制', icon: 'success' })
+      }
+    } catch {}
+  }
 
   if (!detail) {
     return (
@@ -88,6 +122,16 @@ export default function Detail() {
 
   const paramEntries = Object.entries(detail.params || {}).filter(
     ([_, value]) => value && String(value).trim() !== ''
+  )
+
+  const shareButton = process.env.TARO_ENV === 'h5' ? (
+    <View className='share-fab' onClick={handleH5Share}>
+      <Text className='share-fab-text'>分享</Text>
+    </View>
+  ) : (
+    <Button className='share-fab' openType='share' plain>
+      <Text className='share-fab-text'>分享</Text>
+    </Button>
   )
 
   const handlePreview = () => {
@@ -185,6 +229,9 @@ export default function Detail() {
           )}
         </View>
       </ScrollView>
+
+      {/* 浮动分享按钮 */}
+      {shareButton}
 
       {/* H5 图片预览弹窗 */}
       {process.env.TARO_ENV === 'h5' && showPreview && mainImage && (
