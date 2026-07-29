@@ -3,6 +3,7 @@
  */
 const fs = require('fs')
 const path = require('path')
+const SHARE_TIMELINE_PAGES = ['pages/detail/detail.json']
 
 function fixJsonFiles(dir) {
   if (!fs.existsSync(dir)) return
@@ -13,8 +14,20 @@ function fixJsonFiles(dir) {
       fixJsonFiles(fullPath)
     } else if (entry.name.endsWith('.json')) {
       const content = JSON.parse(fs.readFileSync(fullPath, 'utf-8'))
+      let changed = false
+
       if (content.usingComponents && content.usingComponents.comp) {
         delete content.usingComponents.comp
+        changed = true
+      }
+
+      const matchPage = SHARE_TIMELINE_PAGES.some(p => fullPath.replace(/\\/g, '/').endsWith(p))
+      if (matchPage && !content.enableShareTimeline) {
+        content.enableShareTimeline = true
+        changed = true
+      }
+
+      if (changed) {
         fs.writeFileSync(fullPath, JSON.stringify(content))
         console.log(`✅ 已修复: ${path.relative(process.cwd(), fullPath)}`)
       }

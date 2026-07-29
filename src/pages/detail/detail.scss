@@ -353,3 +353,35 @@
   color: #8ab5a5;
   display: block;
 }
+
+/* 分享按钮 */
+.share-fab {
+  position: fixed;
+  right: 32px;
+  bottom: 60px;
+  width: 120px;
+  height: 120px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 24px rgba(0, 184, 148, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 100;
+  border: none;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.share-fab::after {
+  border: none;
+}
+
+.share-fab-text {
+  font-size: 28px;
+  color: #00b894;
+  font-weight: 600;
+  line-height: 1;
+}
