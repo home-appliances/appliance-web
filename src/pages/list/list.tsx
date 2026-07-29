@@ -52,6 +52,7 @@ export default function List() {
   const [searched, setSearched] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [inputFocused, setInputFocused] = useState(false)
   const requestIdRef = useRef(0)
@@ -73,6 +74,7 @@ export default function List() {
       setProducts([])
       setPage(1)
       setTotalPages(1)
+      setTotal(0)
       setLoadingMore(false)
     } else {
       setLoadingMore(true)
@@ -92,6 +94,7 @@ export default function List() {
           setProducts(prev => [...prev, ...list])
         }
         setTotalPages(res.pagination?.totalPages || 1)
+        setTotal(res.pagination?.total || 0)
         setPage(pageNum)
       }
     } catch (e) {
@@ -153,7 +156,7 @@ export default function List() {
             '搜索中...'
           ) : (
             <>
-              找到 <Text className='result-count-num'>{products.length}</Text> 件产品
+              找到 <Text className='result-count-num'>{total}</Text> 件产品
             </>
           )}
         </Text>
