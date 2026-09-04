@@ -160,12 +160,14 @@ export default function Detail() {
             >
               {productImages.map((img, index) => (
                 <SwiperItem key={index}>
-                  <Image
-                    className='main-image'
-                    src={img}
-                    mode='aspectFit'
-                    onClick={handlePreview}
-                  />
+                  <View className='image-slide'>
+                    <Image
+                      className='main-image'
+                      src={img}
+                      mode='aspectFit'
+                      onClick={handlePreview}
+                    />
+                  </View>
                 </SwiperItem>
               ))}
             </Swiper>
