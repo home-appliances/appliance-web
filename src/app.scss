@@ -63,4 +63,74 @@ button:focus,
 taro-view-core:focus {
   outline: none;
 }
+
+/* H5：WeUI input 默认约 1.4em 高，宿主却很高 → 文字贴顶 */
+taro-input-core.index-search-input,
+taro-input-core.search-input {
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  line-height: normal !important;
+}
+
+taro-input-core.index-search-input > input,
+taro-input-core.search-input > input,
+taro-input-core.index-search-input .weui-input,
+taro-input-core.search-input .weui-input {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  line-height: normal !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+  font-size: inherit !important;
+  color: inherit !important;
+}
+
+.index-search-box,
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.image-gallery .image-swiper,
+.image-gallery .taro-swiper-container,
+.image-gallery .swiper-container,
+.image-gallery .swiper-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.image-gallery taro-swiper-item-core,
+.image-gallery .taro-swiper-slide,
+.image-gallery .swiper-slide,
+.image-gallery .image-slide {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.image-gallery .main-image,
+.image-gallery taro-image-core.main-image,
+.image-gallery .main-image img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+.product-image taro-image-core,
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
 /* #endif */
