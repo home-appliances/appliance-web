@@ -319,15 +319,36 @@
 .intro-images {
   margin: 0 -32px;
   background: #fff;
-  overflow: hidden;
+}
+
+.intro-image-wrap {
+  display: block;
+  width: 100%;
+  line-height: 0;
+  font-size: 0;
+  background: #f7fbf9;
 }
 
 .intro-image {
-  display: block;
-  width: 100%;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
   vertical-align: top;
-  background: #f7fbf9;
 }
+
+/* #ifdef h5 */
+.intro-images .intro-image,
+.intro-images taro-image-core.intro-image,
+.intro-images .intro-image img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  object-fit: initial !important;
+  position: static !important;
+}
+/* #endif */
 
 /* 图片预览弹窗 */
 .image-preview-overlay {
