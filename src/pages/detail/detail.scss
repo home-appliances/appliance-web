@@ -311,6 +311,24 @@
   margin-bottom: 0;
 }
 
+/* 商品介绍长图 */
+.intro-section {
+  margin-bottom: 48px;
+}
+
+.intro-images {
+  margin: 0 -32px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.intro-image {
+  display: block;
+  width: 100%;
+  vertical-align: top;
+  background: #f7fbf9;
+}
+
 /* 图片预览弹窗 */
 .image-preview-overlay {
   position: fixed;
@@ -318,7 +336,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.92);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -327,18 +345,30 @@
 
 .image-preview-close {
   position: absolute;
-  top: 40px;
-  right: 40px;
-  width: 80px;
-  height: 80px;
+  top: 48px;
+  right: 48px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
-  font-size: 56px;
+  font-size: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
+  z-index: 1001;
+}
+
+.image-preview-counter {
+  position: absolute;
+  top: 56px;
+  left: 48px;
+  z-index: 1001;
+}
+
+.image-preview-counter-text {
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .image-preview-img {

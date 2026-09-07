@@ -12,10 +12,11 @@ interface ProductDetail {
   model: string
   main_image?: string
   images?: string[]
+  intro_images?: string[]
   params: Record<string, string>
 }
 
-/** 解析图片列表：优先 main_image，兼容 images */
+/** 解析主图列表：优先 main_image，兼容 images */
 function resolveImages(detail: ProductDetail): string[] {
   const urls: string[] = []
   const push = (u?: string) => {
@@ -28,11 +29,23 @@ function resolveImages(detail: ProductDetail): string[] {
   return urls
 }
 
+function resolveIntroImages(detail: ProductDetail): string[] {
+  const urls: string[] = []
+  ;(detail.intro_images || []).forEach((u) => {
+    if (!u || !String(u).trim()) return
+    const fixed = fixImageUrl(String(u).trim())
+    if (fixed && !urls.includes(fixed)) urls.push(fixed)
+  })
+  return urls
+}
+
 export default function Detail() {
   const router = useRouter()
   const [detail, setDetail] = useState<ProductDetail | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [previewCurrent, setPreviewCurrent] = useState('')
   const detailRef = useRef<ProductDetail | null>(null)
   detailRef.current = detail
 
@@ -90,6 +103,7 @@ export default function Detail() {
   }
 
   const productImages = resolveImages(detail)
+  const introImages = resolveIntroImages(detail)
   const mainImage = productImages[currentImageIndex] || productImages[0] || ''
 
   const tags = [
@@ -134,13 +148,23 @@ export default function Detail() {
     </Button>
   )
 
-  const handlePreview = () => {
-    if (!mainImage) return
+  const openPreview = (urls: string[], current: string) => {
+    if (!current || !urls.length) return
     if (process.env.TARO_ENV === 'h5') {
+      setPreviewUrls(urls)
+      setPreviewCurrent(current)
       setShowPreview(true)
     } else {
-      Taro.previewImage({ urls: productImages, current: mainImage })
+      Taro.previewImage({ urls, current })
     }
+  }
+
+  const handlePreview = () => {
+    openPreview(productImages, mainImage)
+  }
+
+  const handleIntroPreview = (url: string) => {
+    openPreview(introImages, url)
   }
 
   return (
@@ -230,18 +254,46 @@ export default function Detail() {
             </View>
           )}
         </View>
+
+        {/* 商品介绍展示图 */}
+        {introImages.length > 0 && (
+          <View className='section intro-section'>
+            <View className='section-header'>
+              <Text className='section-title'>商品介绍</Text>
+            </View>
+            <View className='intro-images'>
+              {introImages.map((url, i) => (
+                <Image
+                  key={`${i}-${url}`}
+                  className='intro-image'
+                  src={url}
+                  mode='widthFix'
+                  lazyLoad
+                  onClick={() => handleIntroPreview(url)}
+                />
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* 浮动分享按钮 */}
       {shareButton}
 
       {/* H5 图片预览弹窗 */}
-      {process.env.TARO_ENV === 'h5' && showPreview && mainImage && (
+      {process.env.TARO_ENV === 'h5' && showPreview && previewCurrent && (
         <View className='image-preview-overlay' onClick={() => setShowPreview(false)}>
           <View className='image-preview-close' onClick={() => setShowPreview(false)}>✕</View>
+          {previewUrls.length > 1 && (
+            <View className='image-preview-counter'>
+              <Text className='image-preview-counter-text'>
+                {Math.max(1, previewUrls.indexOf(previewCurrent) + 1)} / {previewUrls.length}
+              </Text>
+            </View>
+          )}
           <Image
             className='image-preview-img'
-            src={mainImage}
+            src={previewCurrent}
             mode='aspectFit'
             onClick={(e) => e.stopPropagation()}
           />
