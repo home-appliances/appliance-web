@@ -263,14 +263,23 @@ export default function Detail() {
             </View>
             <View className='intro-images'>
               {introImages.map((url, i) => (
-                <Image
+                <View
                   key={`${i}-${url}`}
-                  className='intro-image'
-                  src={url}
-                  mode='widthFix'
-                  lazyLoad
+                  className='intro-image-wrap'
                   onClick={() => handleIntroPreview(url)}
-                />
+                >
+                  {/* H5: Taro Image + widthFix 外层高度常算矮，长图溢出叠盖，改用原生 img */}
+                  {process.env.TARO_ENV === 'h5' ? (
+                    <img className='intro-image' src={url} alt='' loading='lazy' />
+                  ) : (
+                    <Image
+                      className='intro-image'
+                      src={url}
+                      mode='widthFix'
+                      style={{ width: '100%', display: 'block' }}
+                    />
+                  )}
+                </View>
               ))}
             </View>
           </View>
